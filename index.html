@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mannat Realty — Luxury Properties</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400;1,600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            gold: '#c9a84c',
+            'gold-light': '#e8c97a',
+            'gold-dim': 'rgba(201,168,76,0.15)',
+            dark: '#080808',
+            's1': '#111111',
+            's2': '#1a1a1a',
+            's3': '#242424',
+          },
+          fontFamily: {
+            serif: ['Cormorant Garamond', 'serif'],
+            sans:  ['Inter', 'sans-serif'],
+          },
+        }
+      }
+    }
+  </script>
+
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{font-family:'Inter',sans-serif}
+    body{background:#080808;color:#f0ede8;overflow-x:hidden}
+
+    /* ── Scrollbar ── */
+    ::-webkit-scrollbar{width:3px}
+    ::-webkit-scrollbar-track{background:#080808}
+    ::-webkit-scrollbar-thumb{background:#c9a84c;border-radius:2px}
+
+    /* ── Custom cursor ── */
+    #c-dot,#c-ring{position:fixed;pointer-events:none;border-radius:50%;transform:translate(-50%,-50%);z-index:9999;transition:opacity .3s}
+    #c-dot{width:6px;height:6px;background:#c9a84c}
+    #c-ring{width:36px;height:36px;border:1px solid rgba(201,168,76,.5);transition:width .3s,height .3s,border-color .3s}
+    body:hover #c-dot,body:hover #c-ring{opacity:1}
+    .cursor-grow #c-ring{width:56px!important;height:56px!important;border-color:#c9a84c}
+
+    /* ── Preloader ── */
+    #loader{position:fixed;inset:0;background:#080808;z-index:1000;display:flex;align-items:center;justify-content:center;flex-direction:column}
+    #loader-bar{width:0;height:1px;background:#c9a84c;transition:none}
+
+    /* ── Scroll progress ── */
+    #prog{position:fixed;top:0;left:0;height:2px;background:linear-gradient(90deg,#c9a84c,#e8c97a);z-index:900;width:0%;transition:width .1s linear}
+
+    /* ── Nav glass ── */
+    .nav-scrolled{background:rgba(8,8,8,.92)!important;backdrop-filter:blur(20px);border-bottom:1px solid rgba(201,168,76,.12)!important}
+
+    /* ── Marquee ── */
+    .marquee-track{display:flex;white-space:nowrap;animation:marquee 28s linear infinite}
+    .marquee-track:hover{animation-play-state:paused}
+    @keyframes marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+    /* ── Hero ── */
+    .hero-char{display:inline-block;overflow:hidden}
+
+    /* ── Card hover glow ── */
+    .prop-card{transition:transform .4s cubic-bezier(.25,.46,.45,.94),box-shadow .4s}
+    .prop-card:hover{transform:translateY(-8px);box-shadow:0 32px 64px rgba(0,0,0,.8),0 0 0 1px rgba(201,168,76,.25)}
+    .prop-card .card-img img{transition:transform .7s cubic-bezier(.25,.46,.45,.94)}
+    .prop-card:hover .card-img img{transform:scale(1.08)}
+    .card-overlay{transform:translateY(100%);transition:transform .4s cubic-bezier(.25,.46,.45,.94)}
+    .prop-card:hover .card-overlay{transform:translateY(0)}
+
+    /* ── Button ── */
+    .btn-gold{position:relative;overflow:hidden;isolation:isolate}
+    .btn-gold::after{content:'';position:absolute;inset:0;background:#c9a84c;transform:translateX(-101%);transition:transform .4s cubic-bezier(.77,0,.175,1);z-index:-1}
+    .btn-gold:hover::after{transform:translateX(0)}
+    .btn-gold:hover{color:#080808}
+
+    /* ── Gold underline links ── */
+    .nav-link{position:relative}
+    .nav-link::after{content:'';position:absolute;bottom:-2px;left:0;width:0;height:1px;background:#c9a84c;transition:width .3s}
+    .nav-link:hover::after{width:100%}
+
+    /* ── Stat counter ── */
+    .stat-num{font-variant-numeric:tabular-nums}
+
+    /* ── Section reveal ── */
+    .reveal{opacity:0;transform:translateY(40px)}
+
+    /* ── Gallery thumb ── */
+    .g-thumb{overflow:hidden;cursor:pointer}
+    .g-thumb img{transition:transform .5s cubic-bezier(.25,.46,.45,.94)}
+    .g-thumb:hover img{transform:scale(1.06)}
+
+    /* ── Horizontal scroll gallery ── */
+    .h-gallery{display:flex;gap:1.5rem;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;cursor:grab;user-select:none}
+    .h-gallery::-webkit-scrollbar{display:none}
+    .h-gallery.active{cursor:grabbing}
+
+    /* ── Input focus ── */
+    .form-input{background:rgba(26,26,26,1);border:1px solid rgba(201,168,76,.2);color:#f0ede8;transition:border-color .3s,box-shadow .3s}
+    .form-input:focus{outline:none;border-color:#c9a84c;box-shadow:0 0 0 3px rgba(201,168,76,.08)}
+
+    /* ── Mobile menu ── */
+    #mobile-menu{transform:translateX(100%);transition:transform .4s cubic-bezier(.77,0,.175,1)}
+    #mobile-menu.open{transform:translateX(0)}
+
+    /* ── Testimonial carousel ── */
+    .testimonial-card{flex:none;transition:border-color .35s}
+    .testimonial-card:hover{border-color:rgba(201,168,76,.22)!important}
+    .test-dot{height:4px;border-radius:2px;background:rgba(201,168,76,.2);transition:width .35s,background .35s;cursor:pointer}
+    .test-dot.active{background:#c9a84c}
+
+    /* ── Video testimonial card ── */
+    .vid-test{position:relative;overflow:hidden;cursor:pointer}
+    .vid-test img{width:100%;height:100%;object-fit:cover;transition:transform .6s cubic-bezier(.25,.46,.45,.94)}
+    .vid-test:hover img{transform:scale(1.06)}
+    .vid-test-play{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(8,8,8,.45);transition:background .3s}
+    .vid-test:hover .vid-test-play{background:rgba(8,8,8,.25)}
+    .vid-test-play .circle{width:56px;height:56px;border:1.5px solid rgba(201,168,76,.6);border-radius:50%;display:flex;align-items:center;justify-content:center;transition:border-color .3s,background .3s}
+    .vid-test:hover .vid-test-play .circle{border-color:#c9a84c;background:rgba(201,168,76,.1)}
+    .vid-test-info{position:absolute;bottom:0;left:0;right:0;padding:16px 18px;background:linear-gradient(to top,rgba(8,8,8,.9),transparent)}
+
+    /* ── Index video modal ── */
+    #idx-vm{position:fixed;inset:0;background:rgba(8,8,8,.97);z-index:800;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s}
+    #idx-vm.open{opacity:1;pointer-events:all}
+
+    @media(max-width:768px){
+      #c-dot,#c-ring{display:none}
+    }
+  </style>
+</head>
+
+<body>
+
+<!-- ───────────── PRELOADER ───────────── -->
+<div id="loader">
+  <div class="text-center px-8" style="max-width:280px;width:100%">
+    <p id="loader-text" style="font-family:'Cormorant Garamond',serif;font-size:2rem;letter-spacing:.3em;color:#c9a84c;opacity:0;margin-bottom:24px">MANNAT</p>
+    <div style="height:1px;background:rgba(201,168,76,.15);position:relative;overflow:hidden">
+      <div id="loader-bar"></div>
+    </div>
+    <p style="font-family:'Inter',sans-serif;font-size:.65rem;letter-spacing:.25em;color:rgba(240,237,232,.3);margin-top:16px;opacity:0" id="loader-sub">REALTY</p>
+  </div>
+</div>
+
+<!-- ───────────── CUSTOM CURSOR ───────────── -->
+<div id="c-dot"></div>
+<div id="c-ring"></div>
+
+<!-- ───────────── SCROLL PROGRESS ───────────── -->
+<div id="prog"></div>
+
+<!-- ───────────── INDEX VIDEO MODAL ───────────── -->
+<div id="idx-vm">
+  <button id="idx-vm-close" class="absolute top-6 right-6 text-white/60 hover:text-white text-3xl p-2 z-10 transition-colors w-10 h-10 flex items-center justify-center">✕</button>
+  <video id="idx-vm-player" class="max-w-5xl w-full max-h-[80vh]" controls style="outline:none">
+    <source src="" type="video/mp4">
+  </video>
+</div>
+
+<!-- ───────────── NAVIGATION ───────────── -->
+<nav id="navbar" class="fixed top-0 left-0 right-0 z-[80] px-6 md:px-12 py-5 border-b border-transparent transition-all duration-500">
+  <div class="max-w-7xl mx-auto flex items-center justify-between">
+
+    <!-- Logo -->
+    <a href="index.html" class="flex items-center gap-3 group">
+      <img src="public/Heaven villa/logo.png" alt="Mannat" class="h-10 md:h-12 object-contain" onerror="this.style.display='none'">
+      <span style="font-family:'Cormorant Garamond',serif;font-size:1.5rem;letter-spacing:.15em;color:#f0ede8" class="group-hover:text-gold transition-colors duration-300">MANNAT</span>
+    </a>
+
+    <!-- Desktop links -->
+    <ul class="hidden md:flex items-center gap-10">
+      <li><a href="#properties" class="nav-link text-sm tracking-widest text-white/70 hover:text-gold transition-colors duration-300">PROPERTIES</a></li>
+      <li><a href="#about" class="nav-link text-sm tracking-widest text-white/70 hover:text-gold transition-colors duration-300">ABOUT</a></li>
+      <li><a href="#contact" class="nav-link text-sm tracking-widest text-white/70 hover:text-gold transition-colors duration-300">CONTACT</a></li>
+    </ul>
+
+    <div class="hidden md:flex items-center gap-6">
+      <a href="tel:+91XXXXXXXXXX" class="text-sm tracking-widest text-gold border border-gold/40 px-5 py-2 btn-gold transition-colors duration-300">INQUIRE</a>
+    </div>
+
+    <!-- Hamburger -->
+    <button id="hamburger" class="md:hidden flex flex-col gap-[5px] p-2" aria-label="Menu">
+      <span class="ham-line block w-6 h-px bg-gold transition-all duration-300"></span>
+      <span class="ham-line block w-6 h-px bg-gold transition-all duration-300"></span>
+      <span class="ham-line block w-4 h-px bg-gold transition-all duration-300 self-end"></span>
+    </button>
+  </div>
+</nav>
+
+<!-- Mobile Menu -->
+<div id="mobile-menu" class="fixed inset-y-0 right-0 w-full max-w-xs bg-s1 z-[85] flex flex-col justify-center px-10 gap-8">
+  <button id="menu-close" class="absolute top-6 right-6 text-gold text-2xl">✕</button>
+  <a href="#properties" class="mobile-link font-serif text-3xl italic text-white/80 hover:text-gold transition-colors">Properties</a>
+  <a href="#about" class="mobile-link font-serif text-3xl italic text-white/80 hover:text-gold transition-colors">About</a>
+  <a href="#contact" class="mobile-link font-serif text-3xl italic text-white/80 hover:text-gold transition-colors">Contact</a>
+  <a href="tel:+91XXXXXXXXXX" class="mt-4 text-sm tracking-widest text-gold border border-gold/40 px-6 py-3 text-center btn-gold transition-colors">INQUIRE NOW</a>
+</div>
+
+<!-- ───────────── HERO ───────────── -->
+<section id="hero" class="relative h-screen min-h-[600px] flex items-center justify-center overflow-hidden">
+  <!-- Video BG -->
+  <video autoplay muted loop playsinline class="absolute inset-0 w-full h-full object-cover scale-105" id="hero-video">
+    <source src="public/Heaven villa/Heavan villa Reel 2.mp4" type="video/mp4">
+    <source src="public/Heaven villa/VID-20260201-WA0000.mp4" type="video/mp4">
+  </video>
+  <!-- Gradients -->
+  <div class="absolute inset-0" style="background:linear-gradient(to bottom,rgba(8,8,8,.5) 0%,rgba(8,8,8,.25) 40%,rgba(8,8,8,.8) 80%,rgba(8,8,8,1) 100%)"></div>
+  <div class="absolute inset-0" style="background:linear-gradient(to right,rgba(8,8,8,.3),transparent,rgba(8,8,8,.3))"></div>
+
+  <!-- Content -->
+  <div class="relative z-10 text-center max-w-6xl mx-auto px-6">
+    <p id="hero-label" class="text-gold tracking-[.5em] text-xs font-light mb-8 opacity-0">PREMIUM REAL ESTATE · INDIA</p>
+    <h1 class="font-serif font-light leading-none mb-8" style="font-size:clamp(3.5rem,10vw,8.5rem)">
+      <span class="hero-line block overflow-hidden"><span class="hero-word">Curating</span></span>
+      <span class="hero-line block overflow-hidden"><em class="hero-word italic text-gold">Exceptional</em></span>
+      <span class="hero-line block overflow-hidden"><span class="hero-word">Living</span></span>
+    </h1>
+    <p id="hero-sub" class="text-white/50 font-light text-lg max-w-md mx-auto mb-12 opacity-0" style="line-height:1.8">
+      Discover homes that transcend the ordinary — where architecture meets aspiration.
+    </p>
+    <div id="hero-cta" class="flex flex-col sm:flex-row items-center justify-center gap-4 opacity-0">
+      <a href="#properties" class="btn-gold border border-gold text-gold px-10 py-4 text-sm tracking-[.3em] transition-colors duration-300">EXPLORE PROPERTIES</a>
+      <a href="#contact" class="text-white/50 text-sm tracking-[.2em] hover:text-gold transition-colors duration-300 flex items-center gap-2">
+        <span class="block w-6 h-px bg-current"></span>GET IN TOUCH
+      </a>
+    </div>
+  </div>
+
+  <!-- Scroll indicator -->
+  <div class="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 opacity-60" id="scroll-ind">
+    <span class="text-xs tracking-[.3em] text-white/50">SCROLL</span>
+    <div style="width:1px;height:60px;background:linear-gradient(to bottom,rgba(201,168,76,.8),transparent);animation:scrollAnim 2s ease-in-out infinite"></div>
+  </div>
+  <style>@keyframes scrollAnim{0%,100%{opacity:.6;transform:scaleY(1)}50%{opacity:1;transform:scaleY(1.1)}}</style>
+</section>
+
+<!-- ───────────── MARQUEE ───────────── -->
+<div class="py-4 border-y border-gold/10 overflow-hidden bg-s1">
+  <div class="marquee-track text-gold/40 text-xs tracking-[.4em]">
+    <span class="px-8">LUXURY VILLAS</span><span class="px-2 text-gold">·</span>
+    <span class="px-8">PREMIUM ESTATES</span><span class="px-2 text-gold">·</span>
+    <span class="px-8">ARCHITECTURAL EXCELLENCE</span><span class="px-2 text-gold">·</span>
+    <span class="px-8">BESPOKE LIVING</span><span class="px-2 text-gold">·</span>
+    <span class="px-8">CURATED SPACES</span><span class="px-2 text-gold">·</span>
+    <span class="px-8">TIMELESS DESIGN</span><span class="px-2 text-gold">·</span>
+    <span class="px-8">LUXURY VILLAS</span><span class="px-2 text-gold">·</span>
+    <span class="px-8">PREMIUM ESTATES</span><span class="px-2 text-gold">·</span>
+    <span class="px-8">ARCHITECTURAL EXCELLENCE</span><span class="px-2 text-gold">·</span>
+    <span class="px-8">BESPOKE LIVING</span><span class="px-2 text-gold">·</span>
+    <span class="px-8">CURATED SPACES</span><span class="px-2 text-gold">·</span>
+    <span class="px-8">TIMELESS DESIGN</span><span class="px-2 text-gold">·</span>
+  </div>
+</div>
+
+<!-- ───────────── PROPERTIES ───────────── -->
+<section id="properties" class="py-32 px-6 md:px-12 bg-dark">
+  <div class="max-w-7xl mx-auto">
+
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-20">
+      <div class="reveal">
+        <p class="text-gold tracking-[.4em] text-xs mb-4">OUR PORTFOLIO</p>
+        <h2 class="font-serif font-light text-5xl md:text-6xl leading-tight">
+          Exceptional<br><em class="italic text-gold">Properties</em>
+        </h2>
+      </div>
+      <p class="text-white/40 font-light text-sm max-w-xs leading-relaxed reveal">
+        Each property in our collection is handpicked for its architectural merit, location, and the lifestyle it affords.
+      </p>
+    </div>
+
+    <!-- Cards Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+      <!-- Card 1 — Heaven Villa (REAL) -->
+      <a href="property.html" class="prop-card block bg-s2 relative group cursor-pointer reveal" style="border-radius:2px">
+        <div class="card-img overflow-hidden" style="height:320px">
+          <img src="public/Heaven villa/IMG_2239.JPG" alt="Heaven Villa" class="w-full h-full object-cover" loading="lazy">
+          <div class="absolute inset-0 bg-gradient-to-t from-dark via-transparent to-transparent opacity-70"></div>
+          <!-- Badge -->
+          <span class="absolute top-4 left-4 bg-gold text-dark text-xs tracking-[.25em] font-medium px-3 py-1">AVAILABLE</span>
+        </div>
+        <!-- Hover CTA overlay -->
+        <div class="card-overlay absolute bottom-0 left-0 right-0 bg-gold/10 backdrop-blur-sm border-t border-gold/30 px-6 py-4 flex items-center justify-between">
+          <span class="text-gold text-xs tracking-[.3em]">VIEW PROPERTY</span>
+          <svg class="w-4 h-4 text-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+        </div>
+        <div class="p-6">
+          <p class="text-gold/60 text-xs tracking-[.3em] mb-2">LUXURY VILLA</p>
+          <h3 class="font-serif text-2xl font-light mb-3">Heaven Villa</h3>
+          <p class="text-white/40 text-sm mb-5 flex items-center gap-1.5">
+            <svg class="w-3 h-3 text-gold/60" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/></svg>
+            Prime Location
+          </p>
+          <div class="flex items-center gap-6 text-xs text-white/50 border-t border-white/5 pt-4">
+            <span class="flex items-center gap-1.5">
+              <svg class="w-3.5 h-3.5 text-gold/50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+              4 BHK
+            </span>
+            <span class="flex items-center gap-1.5">
+              <svg class="w-3.5 h-3.5 text-gold/50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 6h16M4 12h16M4 18h7"/></svg>
+              3,800 sq ft
+            </span>
+            <span class="ml-auto font-medium text-gold text-sm">₹ On Request</span>
+          </div>
+        </div>
+      </a>
+
+      <!-- Card 2 — Coming Soon -->
+      <div class="prop-card bg-s2 relative reveal" style="border-radius:2px;opacity:.7">
+        <div class="overflow-hidden" style="height:320px;background:linear-gradient(135deg,#1a1a1a,#0f0f0f)">
+          <div class="w-full h-full flex items-center justify-center">
+            <div class="text-center">
+              <div class="w-12 h-12 border border-gold/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg class="w-5 h-5 text-gold/40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+              </div>
+              <p class="text-gold/50 text-xs tracking-[.4em]">COMING SOON</p>
+            </div>
+          </div>
+          <span class="absolute top-4 left-4 bg-s3 text-white/40 text-xs tracking-[.25em] font-medium px-3 py-1">UPCOMING</span>
+        </div>
+        <div class="p-6">
+          <p class="text-gold/30 text-xs tracking-[.3em] mb-2">LUXURY ESTATE</p>
+          <h3 class="font-serif text-2xl font-light mb-3 text-white/40">New Listing</h3>
+          <p class="text-white/25 text-sm mb-5 flex items-center gap-1.5">
+            <svg class="w-3 h-3 text-gold/30" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/></svg>
+            Location TBA
+          </p>
+          <div class="flex items-center gap-6 text-xs text-white/25 border-t border-white/5 pt-4">
+            <span>Details soon</span>
+            <span class="ml-auto text-gold/30 text-sm">Stay Tuned</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 3 — Coming Soon -->
+      <div class="prop-card bg-s2 relative reveal" style="border-radius:2px;opacity:.5">
+        <div class="overflow-hidden" style="height:320px;background:linear-gradient(135deg,#141414,#0a0a0a)">
+          <div class="w-full h-full flex items-center justify-center">
+            <div class="text-center">
+              <div class="w-12 h-12 border border-gold/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg class="w-5 h-5 text-gold/25" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+              </div>
+              <p class="text-gold/35 text-xs tracking-[.4em]">COMING SOON</p>
+            </div>
+          </div>
+          <span class="absolute top-4 left-4 bg-s3 text-white/30 text-xs tracking-[.25em] font-medium px-3 py-1">UPCOMING</span>
+        </div>
+        <div class="p-6">
+          <p class="text-gold/25 text-xs tracking-[.3em] mb-2">PREMIUM VILLA</p>
+          <h3 class="font-serif text-2xl font-light mb-3 text-white/30">New Listing</h3>
+          <p class="text-white/20 text-sm mb-5 flex items-center gap-1.5">
+            <svg class="w-3 h-3 text-gold/20" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/></svg>
+            Location TBA
+          </p>
+          <div class="flex items-center gap-6 text-xs text-white/20 border-t border-white/5 pt-4">
+            <span>Details soon</span>
+            <span class="ml-auto text-gold/25 text-sm">Stay Tuned</span>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /grid -->
+  </div>
+</section>
+
+<!-- ───────────── STATS ───────────── -->
+<section class="py-24 px-6 md:px-12 bg-s1 border-y border-gold/10">
+  <div class="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-12 text-center">
+    <div class="reveal">
+      <p class="stat-num font-serif text-5xl md:text-6xl font-light text-gold" data-target="12">0</p>
+      <p class="text-white/40 text-xs tracking-[.35em] mt-3">YEARS EXCELLENCE</p>
+    </div>
+    <div class="reveal">
+      <p class="stat-num font-serif text-5xl md:text-6xl font-light text-gold" data-target="48">0</p>
+      <p class="text-white/40 text-xs tracking-[.35em] mt-3">PROPERTIES SOLD</p>
+    </div>
+    <div class="reveal">
+      <p class="stat-num font-serif text-5xl md:text-6xl font-light text-gold" data-target="96">0</p>
+      <p class="text-white/40 text-xs tracking-[.35em] mt-3">HAPPY CLIENTS</p>
+    </div>
+    <div class="reveal">
+      <p class="stat-num font-serif text-5xl md:text-6xl font-light text-gold" data-target="100">0</p>
+      <p class="text-white/40 text-xs tracking-[.35em] mt-3">% SATISFACTION</p>
+    </div>
+  </div>
+</section>
+
+<!-- ───────────── ABOUT ───────────── -->
+<section id="about" class="py-32 px-6 md:px-12 bg-dark">
+  <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
+
+    <!-- Left: Image -->
+    <div class="relative reveal order-2 lg:order-1">
+      <div class="absolute -top-4 -left-4 w-full h-full border border-gold/15" style="pointer-events:none"></div>
+      <img src="public/Heaven villa/IMG_2247.JPG" alt="About" class="w-full object-cover" style="height:520px;object-position:center">
+      <div class="absolute bottom-0 left-0 right-0 h-1/2" style="background:linear-gradient(to top,rgba(8,8,8,.7),transparent)"></div>
+      <!-- Label -->
+      <div class="absolute bottom-6 left-6">
+        <p class="text-gold text-xs tracking-[.4em]">HEAVEN VILLA</p>
+        <p class="text-white/40 text-xs mt-1">Our Signature Property</p>
+      </div>
+    </div>
+
+    <!-- Right: Text -->
+    <div class="order-1 lg:order-2">
+      <p class="text-gold tracking-[.4em] text-xs mb-6 reveal">ABOUT MANNAT</p>
+      <h2 class="font-serif font-light text-4xl md:text-5xl leading-snug mb-8 reveal">
+        Where Every Home<br>Tells a Story of<br><em class="italic text-gold">Excellence</em>
+      </h2>
+      <p class="text-white/50 font-light leading-relaxed mb-6 reveal">
+        Mannat Realty was born from a singular vision — to connect discerning buyers with properties that are more than addresses. We curate spaces where architecture, lifestyle, and legacy converge.
+      </p>
+      <p class="text-white/50 font-light leading-relaxed mb-10 reveal">
+        With over a decade of expertise in luxury real estate, we understand that a home is the most personal investment you will ever make. Every property we present meets our exacting standards of quality and craftsmanship.
+      </p>
+      <a href="#contact" class="btn-gold border border-gold text-gold px-10 py-4 text-sm tracking-[.3em] transition-colors duration-300 inline-block reveal">BEGIN YOUR JOURNEY</a>
+    </div>
+  </div>
+</section>
+
+<!-- ───────────── HORIZONTAL GALLERY ───────────── -->
+<section class="py-24 bg-s1 overflow-hidden">
+  <div class="px-6 md:px-12 mb-10">
+    <div class="max-w-7xl mx-auto flex items-end justify-between">
+      <div class="reveal">
+        <p class="text-gold tracking-[.4em] text-xs mb-3">GLIMPSES</p>
+        <h2 class="font-serif font-light text-4xl md:text-5xl">A Peek Inside</h2>
+      </div>
+      <a href="property.html" class="text-gold/60 text-xs tracking-[.3em] hover:text-gold transition-colors hidden md:block reveal">
+        VIEW FULL GALLERY →
+      </a>
+    </div>
+  </div>
+  <div class="h-gallery px-6 md:px-12" id="hgallery">
+    <div class="g-thumb flex-none" style="width:320px;height:400px"><img src="public/Heaven villa/IMG_2253.JPG" alt="" class="w-full h-full object-cover" loading="lazy"></div>
+    <div class="g-thumb flex-none" style="width:260px;height:400px"><img src="public/Heaven villa/IMG_2262.JPG" alt="" class="w-full h-full object-cover" loading="lazy"></div>
+    <div class="g-thumb flex-none" style="width:380px;height:400px"><img src="public/Heaven villa/IMG_2271.JPG" alt="" class="w-full h-full object-cover" loading="lazy"></div>
+    <div class="g-thumb flex-none" style="width:300px;height:400px"><img src="public/Heaven villa/IMG_2278.JPG" alt="" class="w-full h-full object-cover" loading="lazy"></div>
+    <div class="g-thumb flex-none" style="width:340px;height:400px"><img src="public/Heaven villa/IMG_2291.JPG" alt="" class="w-full h-full object-cover" loading="lazy"></div>
+    <div class="g-thumb flex-none" style="width:280px;height:400px"><img src="public/Heaven villa/IMG_2305.JPG" alt="" class="w-full h-full object-cover" loading="lazy"></div>
+    <div class="g-thumb flex-none" style="width:360px;height:400px"><img src="public/Heaven villa/IMG_2320.JPG" alt="" class="w-full h-full object-cover" loading="lazy"></div>
+    <div class="g-thumb flex-none" style="width:300px;height:400px"><img src="public/Heaven villa/IMG_2334.JPG" alt="" class="w-full h-full object-cover" loading="lazy"></div>
+  </div>
+</section>
+
+<!-- ───────────── WHY MANNAT ───────────── -->
+<section class="py-32 px-6 md:px-12 bg-dark">
+  <div class="max-w-7xl mx-auto">
+    <div class="text-center mb-20 reveal">
+      <p class="text-gold tracking-[.4em] text-xs mb-4">WHY CHOOSE US</p>
+      <h2 class="font-serif font-light text-5xl md:text-6xl">The Mannat<br><em class="italic text-gold">Promise</em></h2>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+      <div class="p-8 bg-s2 border border-white/5 hover:border-gold/25 transition-all duration-500 group reveal">
+        <div class="w-10 h-10 border border-gold/30 flex items-center justify-center mb-6 group-hover:border-gold transition-colors duration-500">
+          <svg class="w-5 h-5 text-gold/60 group-hover:text-gold transition-colors duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>
+        </div>
+        <h3 class="font-serif text-xl font-light mb-3">Verified Quality</h3>
+        <p class="text-white/40 text-sm leading-relaxed">Every property undergoes rigorous quality assessment before being listed in our portfolio.</p>
+      </div>
+      <div class="p-8 bg-s2 border border-white/5 hover:border-gold/25 transition-all duration-500 group reveal">
+        <div class="w-10 h-10 border border-gold/30 flex items-center justify-center mb-6 group-hover:border-gold transition-colors duration-500">
+          <svg class="w-5 h-5 text-gold/60 group-hover:text-gold transition-colors duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        </div>
+        <h3 class="font-serif text-xl font-light mb-3">Expert Guidance</h3>
+        <p class="text-white/40 text-sm leading-relaxed">Our seasoned advisors guide you through every step, from discovery to possession.</p>
+      </div>
+      <div class="p-8 bg-s2 border border-white/5 hover:border-gold/25 transition-all duration-500 group reveal">
+        <div class="w-10 h-10 border border-gold/30 flex items-center justify-center mb-6 group-hover:border-gold transition-colors duration-500">
+          <svg class="w-5 h-5 text-gold/60 group-hover:text-gold transition-colors duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+        </div>
+        <h3 class="font-serif text-xl font-light mb-3">Transparent Deals</h3>
+        <p class="text-white/40 text-sm leading-relaxed">Complete transparency in pricing and documentation. No hidden costs, ever.</p>
+      </div>
+      <div class="p-8 bg-s2 border border-white/5 hover:border-gold/25 transition-all duration-500 group reveal">
+        <div class="w-10 h-10 border border-gold/30 flex items-center justify-center mb-6 group-hover:border-gold transition-colors duration-500">
+          <svg class="w-5 h-5 text-gold/60 group-hover:text-gold transition-colors duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064"/></svg>
+        </div>
+        <h3 class="font-serif text-xl font-light mb-3">After-Sale Care</h3>
+        <p class="text-white/40 text-sm leading-relaxed">Our relationship doesn't end at sale. We offer ongoing support for all your property needs.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ───────────── TESTIMONIALS ───────────── -->
+<section id="testimonials" class="py-32 px-6 md:px-12 bg-dark overflow-hidden">
+  <div class="max-w-7xl mx-auto">
+
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16">
+      <div class="reveal">
+        <p class="text-gold tracking-[.4em] text-xs mb-4">CLIENT STORIES</p>
+        <h2 class="font-serif font-light text-5xl md:text-6xl leading-tight">
+          Voices of<br><em class="italic text-gold">Trust</em>
+        </h2>
+      </div>
+      <p class="text-white/40 text-sm max-w-xs leading-relaxed reveal">
+        Over 96 families have found their dream homes through Mannat Realty. Here's what they say.
+      </p>
+    </div>
+
+    <!-- ── TEXT TESTIMONIALS CAROUSEL ── -->
+    <div class="relative mb-24">
+      <div class="overflow-hidden">
+        <div id="testimonials-track" class="flex gap-4" style="will-change:transform">
+
+          <!-- Card 1 -->
+          <div class="testimonial-card reveal bg-s2 border border-white/6 p-8 md:p-10 w-full md:w-[calc(50%-8px)] lg:w-[calc(33.333%-11px)]">
+            <div class="flex gap-1 mb-6">
+              <svg class="w-4 h-4 text-gold" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+              <svg class="w-4 h-4 text-gold" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+              <svg class="w-4 h-4 text-gold" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+              <svg class="w-4 h-4 text-gold" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+              <svg class="w-4 h-4 text-gold" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+            </div>
+            <p class="font-serif text-3xl text-gold/25 leading-none mb-4" style="font-size:4rem;line-height:.8">"</p>
+            <p class="text-white/60 text-sm leading-relaxed mb-8 font-light">
+              Heaven Villa exceeded every expectation. The quality of construction, the premium finishes, and the thoughtful design — it's truly a cut above. Mannat Realty made the whole process completely seamless.
+            </p>
+            <div class="border-t border-white/8 pt-6 flex items-center gap-4">
+              <div class="w-11 h-11 rounded-full overflow-hidden bg-s3 flex-shrink-0 flex items-center justify-center border border-gold/20">
+                <img src="public/Heaven villa/82720-removebg-preview.png" alt="Rohit S." class="w-full h-full object-cover" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+                <span class="text-gold text-sm font-medium hidden w-full h-full items-center justify-center">RS</span>
+              </div>
+              <div>
+                <p class="text-white/85 text-sm font-medium">Rohit & Priya Sharma</p>
+                <p class="text-gold/60 text-xs mt-0.5 tracking-wide">Heaven Villa · Residents</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 2 -->
+          <div class="testimonial-card reveal bg-s2 border border-white/6 p-8 md:p-10 w-full md:w-[calc(50%-8px)] lg:w-[calc(33.333%-11px)]">
+            <div class="flex gap-1 mb-6">
+              <svg class="w-4 h-4 text-gold" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+              <svg class="w-4 h-4 text-gold" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+              <svg class="w-4 h-4 text-gold" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+              <svg class="w-4 h-4 text-gold" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+              <svg class="w-4 h-4 text-gold" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+            </div>
+            <p class="font-serif text-gold/25 leading-none mb-4" style="font-size:4rem;line-height:.8">"</p>
+            <p class="text-white/60 text-sm leading-relaxed mb-8 font-light">
+              I've invested in properties across the city, but Mannat Realty stands in a completely different league. Their transparency, professionalism, and attention to client needs is truly unmatched in this market.
+            </p>
+            <div class="border-t border-white/8 pt-6 flex items-center gap-4">
+              <div class="w-11 h-11 rounded-full bg-s3 flex-shrink-0 flex items-center justify-center border border-gold/20">
+                <span class="text-gold text-sm font-medium">AP</span>
+              </div>
+              <div>
+                <p class="text-white/85 text-sm font-medium">Amit Patel</p>
+                <p class="text-gold/60 text-xs mt-0.5 tracking-wide">Property Investor</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 3 -->
+          <div class="testimonial-card reveal bg-s2 border border-white/6 p-8 md:p-10 w-full md:w-[calc(50%-8px)] lg:w-[calc(33.333%-11px)]">
+            <div class="flex gap-1 mb-6">
+              <svg class="w-4 h-4 text-gold" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+              <svg class="w-4 h-4 text-gold" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+              <svg class="w-4 h-4 text-gold" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+              <svg class="w-4 h-4 text-gold" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+              <svg class="w-4 h-4 text-gold" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+            </div>
+            <p class="font-serif text-gold/25 leading-none mb-4" style="font-size:4rem;line-height:.8">"</p>
+            <p class="text-white/60 text-sm leading-relaxed mb-8 font-light">
+              From the first viewing to possession day, every single detail was handled with care. We feel at home in the truest sense of the word. Heaven Villa is everything we dreamed of, and more.
+            </p>
+            <div class="border-t border-white/8 pt-6 flex items-center gap-4">
+              <div class="w-11 h-11 rounded-full bg-s3 flex-shrink-0 flex items-center justify-center border border-gold/20">
+                <span class="text-gold text-sm font-medium">SM</span>
+              </div>
+              <div>
+                <p class="text-white/85 text-sm font-medium">Suresh & Kavita Mehta</p>
+                <p class="text-gold/60 text-xs mt-0.5 tracking-wide">Heaven Villa · Residents</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 4 -->
+          <div class="testimonial-card reveal bg-s2 border border-white/6 p-8 md:p-10 w-full md:w-[calc(50%-8px)] lg:w-[calc(33.333%-11px)]">
+            <div class="flex gap-1 mb-6">
+              <svg class="w-4 h-4 text-gold" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+              <svg class="w-4 h-4 text-gold" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+              <svg class="w-4 h-4 text-gold" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+              <svg class="w-4 h-4 text-gold" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+              <svg class="w-4 h-4 text-gold" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+            </div>
+            <p class="font-serif text-gold/25 leading-none mb-4" style="font-size:4rem;line-height:.8">"</p>
+            <p class="text-white/60 text-sm leading-relaxed mb-8 font-light">
+              I never imagined buying a home could feel this stress-free. The Mannat team was available at every step, answered every question patiently, and delivered exactly what they promised. Our dream is now reality.
+            </p>
+            <div class="border-t border-white/8 pt-6 flex items-center gap-4">
+              <div class="w-11 h-11 rounded-full overflow-hidden bg-s3 flex-shrink-0 flex items-center justify-center border border-gold/20">
+                <img src="public/Heaven villa/82721-removebg-preview.png" alt="Neha J." class="w-full h-full object-cover" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+                <span class="text-gold text-sm font-medium hidden w-full h-full items-center justify-center">NJ</span>
+              </div>
+              <div>
+                <p class="text-white/85 text-sm font-medium">Neha Joshi</p>
+                <p class="text-gold/60 text-xs mt-0.5 tracking-wide">Proud Homeowner</p>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /track -->
+      </div>
+
+      <!-- Carousel controls -->
+      <div class="flex items-center justify-between mt-8">
+        <div class="flex items-center gap-2" id="test-dots">
+          <div class="test-dot active w-6" onclick="slideToTest(0)"></div>
+          <div class="test-dot w-2" onclick="slideToTest(1)"></div>
+          <div class="test-dot w-2" onclick="slideToTest(2)"></div>
+          <div class="test-dot w-2" onclick="slideToTest(3)"></div>
+        </div>
+        <div class="flex gap-3">
+          <button id="test-prev"
+            class="w-11 h-11 border border-gold/25 flex items-center justify-center text-gold/50 hover:border-gold hover:text-gold transition-all duration-300"
+            style="opacity:.4">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 19l-7-7 7-7"/></svg>
+          </button>
+          <button id="test-next"
+            class="w-11 h-11 border border-gold/25 flex items-center justify-center text-gold/50 hover:border-gold hover:text-gold transition-all duration-300">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5l7 7-7 7"/></svg>
+          </button>
+        </div>
+      </div>
+    </div><!-- /carousel -->
+
+    <!-- ── VIDEO TESTIMONIALS ── -->
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
+      <div class="reveal">
+        <p class="text-gold tracking-[.4em] text-xs mb-3">VIDEO REVIEWS</p>
+        <h3 class="font-serif font-light text-3xl md:text-4xl">Hear It Directly From<br><em class="italic text-gold">Our Clients</em></h3>
+      </div>
+      <p class="text-white/35 text-xs tracking-widest reveal hidden md:block">CLICK TO PLAY</p>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+
+      <!-- Video 1 -->
+      <div class="vid-test reveal" style="height:280px"
+           onclick="openIdxVideo('public/Heaven villa/VID-20250912-WA0051.mp4')">
+        <img src="public/Heaven villa/IMG-20250918-WA0008.jpg" alt="Client Review" loading="lazy"
+             onerror="this.src='public/Heaven villa/IMG_2239.JPG'">
+        <div class="vid-test-play">
+          <div class="circle mb-3">
+            <svg class="w-5 h-5 text-gold ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          </div>
+          <p class="text-white/60 text-xs tracking-widest">PLAY REVIEW</p>
+        </div>
+        <div class="vid-test-info">
+          <p class="text-white/85 text-sm font-medium">Rohit Sharma</p>
+          <p class="text-gold/60 text-xs mt-0.5">Heaven Villa · Resident</p>
+        </div>
+      </div>
+
+      <!-- Video 2 -->
+      <div class="vid-test reveal" style="height:280px"
+           onclick="openIdxVideo('public/Heaven villa/VID-20250918-WA0009.mp4')">
+        <img src="public/Heaven villa/IMG-20250921-WA0004.jpg" alt="Client Review" loading="lazy"
+             onerror="this.src='public/Heaven villa/IMG_2247.JPG'">
+        <div class="vid-test-play">
+          <div class="circle mb-3">
+            <svg class="w-5 h-5 text-gold ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          </div>
+          <p class="text-white/60 text-xs tracking-widest">PLAY REVIEW</p>
+        </div>
+        <div class="vid-test-info">
+          <p class="text-white/85 text-sm font-medium">Priya Mehta</p>
+          <p class="text-gold/60 text-xs mt-0.5">Heaven Villa · Resident</p>
+        </div>
+      </div>
+
+      <!-- Video 3 -->
+      <div class="vid-test reveal" style="height:280px"
+           onclick="openIdxVideo('public/Heaven villa/VID-20251025-WA0009.mp4')">
+        <img src="public/Heaven villa/IMG-20251113-WA0001.jpg" alt="Client Review" loading="lazy"
+             onerror="this.src='public/Heaven villa/IMG_2253.JPG'">
+        <div class="vid-test-play">
+          <div class="circle mb-3">
+            <svg class="w-5 h-5 text-gold ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          </div>
+          <p class="text-white/60 text-xs tracking-widest">PLAY REVIEW</p>
+        </div>
+        <div class="vid-test-info">
+          <p class="text-white/85 text-sm font-medium">Amit Patel</p>
+          <p class="text-gold/60 text-xs mt-0.5">Property Investor</p>
+        </div>
+      </div>
+
+      <!-- Video 4 -->
+      <div class="vid-test reveal" style="height:280px"
+           onclick="openIdxVideo('public/Heaven villa/VID-20251112-WA0001.mp4')">
+        <img src="public/Heaven villa/IMG-20251113-WA0004.jpg" alt="Client Review" loading="lazy"
+             onerror="this.src='public/Heaven villa/IMG_2262.JPG'">
+        <div class="vid-test-play">
+          <div class="circle mb-3">
+            <svg class="w-5 h-5 text-gold ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          </div>
+          <p class="text-white/60 text-xs tracking-widest">PLAY REVIEW</p>
+        </div>
+        <div class="vid-test-info">
+          <p class="text-white/85 text-sm font-medium">Neha Joshi</p>
+          <p class="text-gold/60 text-xs mt-0.5">Proud Homeowner</p>
+        </div>
+      </div>
+
+    </div><!-- /video grid -->
+  </div>
+</section>
+
+<!-- ───────────── CONTACT / CTA ───────────── -->
+<section id="contact" class="py-32 px-6 md:px-12 bg-s1 relative overflow-hidden">
+  <!-- BG accent -->
+  <div class="absolute top-0 right-0 w-96 h-96 rounded-full" style="background:radial-gradient(circle,rgba(201,168,76,.04),transparent);transform:translate(30%,-30%)"></div>
+
+  <div class="max-w-3xl mx-auto text-center reveal">
+    <p class="text-gold tracking-[.4em] text-xs mb-6">GET IN TOUCH</p>
+    <h2 class="font-serif font-light text-5xl md:text-6xl mb-6">Begin Your<br><em class="italic text-gold">Journey</em></h2>
+    <p class="text-white/40 font-light leading-relaxed mb-16 max-w-xl mx-auto">
+      Whether you're searching for your dream home or exploring investment opportunities — we're here to make it exceptional.
+    </p>
+
+    <!-- Contact Form -->
+    <form id="contact-form" class="text-left" onsubmit="handleSubmit(event)">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
+        <div class="relative">
+          <input type="text" placeholder="Full Name" required class="form-input w-full px-5 py-4 text-sm" />
+        </div>
+        <div class="relative">
+          <input type="email" placeholder="Email Address" required class="form-input w-full px-5 py-4 text-sm" />
+        </div>
+        <div class="relative">
+          <input type="tel" placeholder="Phone Number" class="form-input w-full px-5 py-4 text-sm" />
+        </div>
+        <div class="relative">
+          <select class="form-input w-full px-5 py-4 text-sm appearance-none cursor-pointer" style="color:#888884">
+            <option value="">Property Interest</option>
+            <option value="heaven-villa">Heaven Villa</option>
+            <option value="other">Other / General Inquiry</option>
+          </select>
+        </div>
+      </div>
+      <div class="mb-6">
+        <textarea rows="4" placeholder="Your Message (optional)" class="form-input w-full px-5 py-4 text-sm resize-none"></textarea>
+      </div>
+      <button type="submit" class="btn-gold w-full border border-gold text-gold py-5 text-sm tracking-[.3em] transition-colors duration-300">SEND INQUIRY</button>
+    </form>
+    <div id="form-success" class="hidden mt-6 text-center py-6 border border-gold/20 bg-gold/5">
+      <p class="text-gold font-serif text-xl italic">Thank you</p>
+      <p class="text-white/50 text-sm mt-2">We'll reach out within 24 hours.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ───────────── FOOTER ───────────── -->
+<footer class="bg-dark border-t border-gold/10 px-6 md:px-12 py-16">
+  <div class="max-w-7xl mx-auto">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-12 mb-16">
+      <!-- Brand -->
+      <div>
+        <div class="flex items-center gap-3 mb-4">
+          <img src="public/Heaven villa/logo.png" alt="Mannat" class="h-10 object-contain" onerror="this.style.display='none'">
+          <span style="font-family:'Cormorant Garamond',serif;font-size:1.5rem;letter-spacing:.15em">MANNAT</span>
+        </div>
+        <p class="text-white/30 text-sm leading-relaxed max-w-xs">Curating exceptional living spaces for those who demand the finest in luxury real estate.</p>
+      </div>
+      <!-- Links -->
+      <div>
+        <p class="text-gold tracking-[.35em] text-xs mb-6">NAVIGATION</p>
+        <ul class="space-y-3">
+          <li><a href="#properties" class="text-white/40 text-sm hover:text-gold transition-colors">Properties</a></li>
+          <li><a href="#about" class="text-white/40 text-sm hover:text-gold transition-colors">About</a></li>
+          <li><a href="#contact" class="text-white/40 text-sm hover:text-gold transition-colors">Contact</a></li>
+          <li><a href="property.html" class="text-white/40 text-sm hover:text-gold transition-colors">Heaven Villa</a></li>
+        </ul>
+      </div>
+      <!-- Contact -->
+      <div>
+        <p class="text-gold tracking-[.35em] text-xs mb-6">CONTACT</p>
+        <div class="space-y-3">
+          <a href="tel:+91XXXXXXXXXX" class="block text-white/40 text-sm hover:text-gold transition-colors">+91 — XXXXXXXXXX</a>
+          <a href="mailto:info@mannatrealty.in" class="block text-white/40 text-sm hover:text-gold transition-colors">info@mannatrealty.in</a>
+          <p class="text-white/30 text-sm leading-relaxed pt-2">India</p>
+        </div>
+      </div>
+    </div>
+    <div class="border-t border-white/5 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
+      <p class="text-white/20 text-xs tracking-[.2em]">© 2026 MANNAT REALTY. ALL RIGHTS RESERVED.</p>
+      <p class="text-white/15 text-xs">Crafted with care</p>
+    </div>
+  </div>
+</footer>
+
+<!-- ───────────── SCRIPTS ───────────── -->
+<script>
+  gsap.registerPlugin(ScrollTrigger);
+
+  /* ── Preloader ── */
+  const loaderTl = gsap.timeline({
+    onComplete: () => {
+      gsap.to('#loader', { opacity: 0, duration: .6, ease: 'power2.inOut', onComplete: () => {
+        document.getElementById('loader').style.display = 'none';
+        startHeroAnim();
+      }});
+    }
+  });
+  loaderTl
+    .to('#loader-text', { opacity: 1, y: 0, duration: .6, ease: 'power3.out' }, .2)
+    .to('#loader-sub',  { opacity: 1, duration: .4 }, .5)
+    .to('#loader-bar',  { width: '100%', duration: 1.2, ease: 'power2.inOut' }, .4)
+    .to({}, { duration: .3 }); // brief pause
+
+  /* ── Hero animation (after loader) ── */
+  function startHeroAnim() {
+    const tl = gsap.timeline();
+    tl.to('#hero-label', { opacity: 1, y: 0, duration: .8, ease: 'power3.out' })
+      .from('.hero-word', { y: '110%', duration: 1, ease: 'power4.out', stagger: .1 }, '-=.4')
+      .to('#hero-sub',  { opacity: 1, y: 0, duration: .7, ease: 'power3.out' }, '-=.5')
+      .to('#hero-cta',  { opacity: 1, y: 0, duration: .7, ease: 'power3.out' }, '-=.4')
+      .from('#scroll-ind', { opacity: 0, y: 20, duration: .6 }, '-=.3');
+  }
+
+  /* ── Custom cursor ── */
+  const dot  = document.getElementById('c-dot');
+  const ring = document.getElementById('c-ring');
+  let mx = window.innerWidth / 2, my = window.innerHeight / 2;
+  let rx = mx, ry = my;
+
+  document.addEventListener('mousemove', e => {
+    mx = e.clientX; my = e.clientY;
+    gsap.to(dot, { x: mx, y: my, duration: .05 });
+  });
+  (function lerp() {
+    rx += (mx - rx) * .12; ry += (my - ry) * .12;
+    gsap.set(ring, { x: rx, y: ry });
+    requestAnimationFrame(lerp);
+  })();
+
+  document.querySelectorAll('a,button,.prop-card,.g-thumb').forEach(el => {
+    el.addEventListener('mouseenter', () => document.body.classList.add('cursor-grow'));
+    el.addEventListener('mouseleave', () => document.body.classList.remove('cursor-grow'));
+  });
+
+  /* ── Navbar on scroll ── */
+  const navbar = document.getElementById('navbar');
+  window.addEventListener('scroll', () => {
+    navbar.classList.toggle('nav-scrolled', window.scrollY > 80);
+    const h = document.documentElement, b = document.body;
+    const st = 'scrollTop', sh = 'scrollHeight';
+    const pct = (h[st] || b[st]) / ((h[sh] || b[sh]) - h.clientHeight) * 100;
+    document.getElementById('prog').style.width = pct + '%';
+  });
+
+  /* ── Mobile menu ── */
+  const mm = document.getElementById('mobile-menu');
+  document.getElementById('hamburger').addEventListener('click', () => mm.classList.add('open'));
+  document.getElementById('menu-close').addEventListener('click', () => mm.classList.remove('open'));
+  mm.querySelectorAll('.mobile-link,a').forEach(l => l.addEventListener('click', () => mm.classList.remove('open')));
+
+  /* ── ScrollTrigger reveals ── */
+  gsap.utils.toArray('.reveal').forEach((el, i) => {
+    gsap.fromTo(el,
+      { opacity: 0, y: 50 },
+      {
+        opacity: 1, y: 0, duration: .9, ease: 'power3.out',
+        scrollTrigger: { trigger: el, start: 'top 85%', toggleActions: 'play none none none' },
+        delay: (i % 4) * .08
+      }
+    );
+  });
+
+  /* ── Stat counters ── */
+  document.querySelectorAll('.stat-num').forEach(el => {
+    const target = parseInt(el.dataset.target);
+    ScrollTrigger.create({
+      trigger: el,
+      start: 'top 80%',
+      once: true,
+      onEnter: () => {
+        gsap.to({ val: 0 }, {
+          val: target,
+          duration: 2,
+          ease: 'power2.out',
+          onUpdate: function() { el.textContent = Math.round(this.targets()[0].val); }
+        });
+      }
+    });
+  });
+
+  /* ── Hero parallax ── */
+  gsap.to('#hero-video', {
+    yPercent: 20,
+    ease: 'none',
+    scrollTrigger: { trigger: '#hero', start: 'top top', end: 'bottom top', scrub: true }
+  });
+
+  /* ── Horizontal gallery drag ── */
+  const hg = document.getElementById('hgallery');
+  let isDown = false, startX, scrollLeft;
+  hg.addEventListener('mousedown', e => {
+    isDown = true; hg.classList.add('active');
+    startX = e.pageX - hg.offsetLeft;
+    scrollLeft = hg.scrollLeft;
+  });
+  ['mouseleave','mouseup'].forEach(ev => hg.addEventListener(ev, () => { isDown = false; hg.classList.remove('active'); }));
+  hg.addEventListener('mousemove', e => {
+    if (!isDown) return;
+    e.preventDefault();
+    const x = e.pageX - hg.offsetLeft;
+    hg.scrollLeft = scrollLeft - (x - startX) * 1.5;
+  });
+
+  /* ── Form submit ── */
+  function handleSubmit(e) {
+    e.preventDefault();
+    const btn = e.target.querySelector('button[type="submit"]');
+    btn.textContent = 'SENDING…';
+    setTimeout(() => {
+      e.target.style.display = 'none';
+      document.getElementById('form-success').classList.remove('hidden');
+    }, 1200);
+  }
+
+  /* ── Index video modal ── */
+  const idxVm  = document.getElementById('idx-vm');
+  const idxVmP = document.getElementById('idx-vm-player');
+
+  function openIdxVideo(src) {
+    idxVmP.querySelector('source').src = src;
+    idxVmP.load();
+    idxVm.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    idxVmP.play().catch(() => {});
+  }
+
+  document.getElementById('idx-vm-close').addEventListener('click', () => {
+    idxVm.classList.remove('open');
+    idxVmP.pause();
+    document.body.style.overflow = '';
+  });
+  idxVm.addEventListener('click', e => {
+    if (e.target === idxVm) {
+      idxVm.classList.remove('open');
+      idxVmP.pause();
+      document.body.style.overflow = '';
+    }
+  });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && idxVm.classList.contains('open')) {
+      idxVm.classList.remove('open');
+      idxVmP.pause();
+      document.body.style.overflow = '';
+    }
+  });
+
+  /* ── Testimonials carousel ── */
+  const tTrack  = document.getElementById('testimonials-track');
+  const tCards  = document.querySelectorAll('.testimonial-card');
+  const tDots   = document.querySelectorAll('.test-dot');
+  const tPrev   = document.getElementById('test-prev');
+  const tNext   = document.getElementById('test-next');
+  let tCurrent  = 0;
+  let testTimer;
+
+  function getPerView() {
+    return window.innerWidth >= 1024 ? 3 : window.innerWidth >= 768 ? 2 : 1;
+  }
+  function getMaxSlide() {
+    return Math.max(0, tCards.length - getPerView());
+  }
+
+  function slideToTest(idx) {
+    const max = getMaxSlide();
+    tCurrent  = Math.max(0, Math.min(idx, max));
+
+    const gap  = 16; // matches `gap-4`
+    const cardW = tCards[0].getBoundingClientRect().width + gap;
+    gsap.to(tTrack, { x: -(tCurrent * cardW), duration: .65, ease: 'power3.inOut' });
+
+    tDots.forEach((d, i) => {
+      const active = i === tCurrent;
+      d.classList.toggle('active', active);
+      d.style.width = active ? '24px' : '8px';
+    });
+
+    tPrev.style.opacity = tCurrent === 0   ? '.3' : '1';
+    tNext.style.opacity = tCurrent >= max  ? '.3' : '1';
+  }
+
+  tPrev.addEventListener('click', () => { slideToTest(tCurrent - 1); resetTestTimer(); });
+  tNext.addEventListener('click', () => { slideToTest(tCurrent + 1); resetTestTimer(); });
+
+  function resetTestTimer() {
+    clearInterval(testTimer);
+    testTimer = setInterval(() => slideToTest(tCurrent >= getMaxSlide() ? 0 : tCurrent + 1), 5000);
+  }
+  testTimer = setInterval(() => slideToTest(tCurrent >= getMaxSlide() ? 0 : tCurrent + 1), 5000);
+
+  /* Touch / mouse-drag on carousel */
+  let tDragStart = null;
+  tTrack.addEventListener('mousedown',  e => { tDragStart = e.clientX; tTrack.style.cursor = 'grabbing'; });
+  tTrack.addEventListener('mouseup',    e => {
+    if (tDragStart === null) return;
+    const diff = tDragStart - e.clientX;
+    if (Math.abs(diff) > 40) { slideToTest(diff > 0 ? tCurrent + 1 : tCurrent - 1); resetTestTimer(); }
+    tDragStart = null; tTrack.style.cursor = '';
+  });
+  tTrack.addEventListener('mouseleave', () => { tDragStart = null; tTrack.style.cursor = ''; });
+  tTrack.addEventListener('touchstart', e => { tDragStart = e.touches[0].clientX; }, { passive: true });
+  tTrack.addEventListener('touchend',   e => {
+    if (tDragStart === null) return;
+    const diff = tDragStart - e.changedTouches[0].clientX;
+    if (Math.abs(diff) > 40) { slideToTest(diff > 0 ? tCurrent + 1 : tCurrent - 1); resetTestTimer(); }
+    tDragStart = null;
+  });
+
+  window.addEventListener('resize', () => slideToTest(tCurrent));
+
+  /* cursor-grow for vid-test + testimonial nav */
+  document.querySelectorAll('.vid-test, #test-prev, #test-next, .test-dot').forEach(el => {
+    el.addEventListener('mouseenter', () => document.body.classList.add('cursor-grow'));
+    el.addEventListener('mouseleave', () => document.body.classList.remove('cursor-grow'));
+  });
+
+  /* ── Smooth anchor scroll ── */
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      const target = document.querySelector(a.getAttribute('href'));
+      if (target) {
+        e.preventDefault();
+        gsap.to(window, { scrollTo: { y: target, offsetY: 80 }, duration: 1.2, ease: 'power3.inOut' });
+      }
+    });
+  });
+</script>
+<!-- GSAP ScrollTo plugin (for smooth anchor scroll) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollToPlugin.min.js"></script>
+
+</body>
+</html>

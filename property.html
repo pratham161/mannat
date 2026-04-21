@@ -1,0 +1,1271 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Heaven Villa — Mannat Realty</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400;1,600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollToPlugin.min.js"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            gold: '#c9a84c',
+            'gold-light': '#e8c97a',
+            dark: '#080808',
+            's1': '#111111',
+            's2': '#1a1a1a',
+            's3': '#242424',
+          },
+          fontFamily: {
+            serif: ['Cormorant Garamond', 'serif'],
+            sans:  ['Inter', 'sans-serif'],
+          },
+        }
+      }
+    }
+  </script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-family: 'Inter', sans-serif; }
+    body { background: #080808; color: #f0ede8; overflow-x: hidden; }
+
+    /* ── Scrollbar ── */
+    ::-webkit-scrollbar { width: 3px; }
+    ::-webkit-scrollbar-track { background: #080808; }
+    ::-webkit-scrollbar-thumb { background: #c9a84c; border-radius: 2px; }
+
+    /* ── Custom cursor ── */
+    #c-dot, #c-ring {
+      position: fixed; pointer-events: none; border-radius: 50%;
+      transform: translate(-50%, -50%); z-index: 9999;
+    }
+    #c-dot { width: 6px; height: 6px; background: #c9a84c; }
+    #c-ring {
+      width: 36px; height: 36px; border: 1px solid rgba(201,168,76,.5);
+      transition: width .3s, height .3s, border-color .3s;
+    }
+    .cursor-grow #c-ring { width: 56px !important; height: 56px !important; border-color: #c9a84c; }
+
+    /* ── Scroll progress ── */
+    #prog {
+      position: fixed; top: 0; left: 0; height: 2px;
+      background: linear-gradient(90deg, #c9a84c, #e8c97a);
+      z-index: 900; width: 0%; transition: width .1s linear;
+    }
+
+    /* ── Nav ── */
+    .nav-scrolled {
+      background: rgba(8,8,8,.95) !important;
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(201,168,76,.12) !important;
+    }
+    .nav-link { position: relative; }
+    .nav-link::after {
+      content: ''; position: absolute; bottom: -2px; left: 0;
+      width: 0; height: 1px; background: #c9a84c; transition: width .3s;
+    }
+    .nav-link:hover::after { width: 100%; }
+
+    /* ── Button fill ── */
+    .btn-gold { position: relative; overflow: hidden; isolation: isolate; }
+    .btn-gold::after {
+      content: ''; position: absolute; inset: 0; background: #c9a84c;
+      transform: translateX(-101%); transition: transform .4s cubic-bezier(.77,0,.175,1); z-index: -1;
+    }
+    .btn-gold:hover::after { transform: translateX(0); }
+    .btn-gold:hover { color: #080808 !important; }
+
+    /* ── Mobile menu ── */
+    #mobile-menu { transform: translateX(100%); transition: transform .4s cubic-bezier(.77,0,.175,1); }
+    #mobile-menu.open { transform: translateX(0); }
+
+    /* ── Hero slides ── */
+    .hero-slide { position: absolute; inset: 0; opacity: 0; transition: opacity 1s ease; }
+    .hero-slide.active { opacity: 1; }
+    .hero-slide img { width: 100%; height: 100%; object-fit: cover; object-position: center; }
+
+    /* ── Hero thumbs ── */
+    .hero-thumb {
+      cursor: pointer; border: 2px solid transparent; opacity: .5;
+      transition: all .3s; overflow: hidden;
+    }
+    .hero-thumb.active { border-color: #c9a84c; opacity: 1; }
+    .hero-thumb:hover { opacity: .8; }
+
+    /* ── Sticky bar ── */
+    #info-bar { transition: background .4s, border-color .4s; }
+    #info-bar.stuck {
+      background: rgba(17,17,17,.96) !important;
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(201,168,76,.12) !important;
+    }
+
+    /* ── Gallery masonry (CSS columns approach — no row-span bugs) ── */
+    .masonry-grid {
+      columns: 2; column-gap: 8px;
+    }
+    @media (min-width: 768px)  { .masonry-grid { columns: 3; } }
+    @media (min-width: 1024px) { .masonry-grid { columns: 4; } }
+    .masonry-item {
+      break-inside: avoid; margin-bottom: 8px;
+      overflow: hidden; cursor: pointer; position: relative;
+    }
+    .masonry-item img {
+      width: 100%; display: block;
+      transition: transform .6s cubic-bezier(.25,.46,.45,.94);
+    }
+    .masonry-item:hover img { transform: scale(1.06); }
+    .masonry-item .gal-overlay {
+      position: absolute; inset: 0;
+      background: rgba(8,8,8,.45);
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; transition: opacity .3s;
+    }
+    .masonry-item:hover .gal-overlay { opacity: 1; }
+
+    /* ── Lightbox ── */
+    #lightbox {
+      position: fixed; inset: 0; background: rgba(8,8,8,.97);
+      z-index: 800; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none; transition: opacity .3s;
+    }
+    #lightbox.open { opacity: 1; pointer-events: all; }
+    #lb-img { max-width: 90vw; max-height: 78vh; object-fit: contain; transition: opacity .25s; }
+    #lb-img.fading { opacity: 0; }
+
+    /* ── Video modal ── */
+    #video-modal {
+      position: fixed; inset: 0; background: rgba(8,8,8,.97);
+      z-index: 800; display: flex; align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none; transition: opacity .3s;
+    }
+    #video-modal.open { opacity: 1; pointer-events: all; }
+
+    /* ── Spec table ── */
+    .spec-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 14px 20px; border-bottom: 1px solid rgba(255,255,255,.05);
+    }
+    .spec-row:last-child { border-bottom: none; }
+    .spec-row:hover { background: rgba(201,168,76,.03); }
+
+    /* ── Amenity card ── */
+    .amenity-card {
+      display: flex; align-items: flex-start; gap: 14px; padding: 18px;
+      background: rgba(26,26,26,1); border: 1px solid rgba(255,255,255,.05);
+      transition: border-color .35s, transform .35s;
+    }
+    .amenity-card:hover {
+      border-color: rgba(201,168,76,.25);
+      transform: translateY(-3px);
+    }
+
+    /* ── Highlight card ── */
+    .highlight-card {
+      padding: 28px 24px; border: 1px solid rgba(255,255,255,.06);
+      background: rgba(17,17,17,1);
+      transition: border-color .35s, background .35s;
+    }
+    .highlight-card:hover {
+      border-color: rgba(201,168,76,.2);
+      background: rgba(22,22,22,1);
+    }
+
+    /* ── Form inputs ── */
+    .form-input {
+      background: rgba(26,26,26,1); border: 1px solid rgba(201,168,76,.2);
+      color: #f0ede8; width: 100%;
+      transition: border-color .3s, box-shadow .3s;
+    }
+    .form-input:focus {
+      outline: none; border-color: #c9a84c;
+      box-shadow: 0 0 0 3px rgba(201,168,76,.08);
+    }
+    .form-input option { background: #1a1a1a; }
+
+    /* ── WhatsApp float ── */
+    #wa-btn {
+      position: fixed; bottom: 28px; right: 28px; z-index: 500;
+      width: 52px; height: 52px; border-radius: 50%;
+      background: #25d366; display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 20px rgba(37,211,102,.3);
+      transition: transform .3s, box-shadow .3s;
+    }
+    #wa-btn:hover {
+      transform: scale(1.1);
+      box-shadow: 0 6px 28px rgba(37,211,102,.45);
+    }
+
+    /* ── Play btn ── */
+    .play-btn { transition: transform .3s, box-shadow .3s; }
+    .play-btn:hover { transform: scale(1.1); box-shadow: 0 0 40px rgba(201,168,76,.3); }
+
+    /* ── Stats quick bar ── */
+    .stat-cell { transition: background .2s; }
+    .stat-cell:hover { background: rgba(201,168,76,.05); }
+
+    /* ── Swipe hint ── */
+    @keyframes swipe-hint {
+      0%, 100% { transform: translateX(0); opacity: .6; }
+      50% { transform: translateX(8px); opacity: 1; }
+    }
+
+    @media (max-width: 768px) {
+      #c-dot, #c-ring { display: none; }
+      .masonry-grid { columns: 2; }
+    }
+  </style>
+</head>
+
+<body>
+
+<!-- ── WhatsApp Floating Button ── -->
+<a id="wa-btn" href="https://wa.me/91XXXXXXXXXX?text=Hi%2C%20I'm%20interested%20in%20Heaven%20Villa" target="_blank" rel="noopener" aria-label="Chat on WhatsApp">
+  <svg width="26" height="26" viewBox="0 0 24 24" fill="white">
+    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+  </svg>
+</a>
+
+<!-- ── Custom cursor ── -->
+<div id="c-dot"></div>
+<div id="c-ring"></div>
+<div id="prog"></div>
+
+<!-- ── Lightbox ── -->
+<div id="lightbox">
+  <div class="absolute top-4 right-4 flex items-center gap-4 z-10">
+    <span id="lb-counter" class="text-white/40 text-xs tracking-[.3em]"></span>
+    <button id="lb-close" class="text-white/50 hover:text-white text-3xl leading-none transition-colors w-10 h-10 flex items-center justify-center">✕</button>
+  </div>
+  <button id="lb-prev" class="absolute left-2 md:left-8 text-white/40 hover:text-gold transition-colors p-4 text-5xl z-10 top-1/2 -translate-y-1/2">‹</button>
+  <button id="lb-next" class="absolute right-2 md:right-8 text-white/40 hover:text-gold transition-colors p-4 text-5xl z-10 top-1/2 -translate-y-1/2">›</button>
+  <img id="lb-img" src="" alt="Gallery" />
+  <div id="lb-thumbs" class="flex gap-1.5 mt-4 overflow-x-auto px-4 max-w-3xl" style="scrollbar-width:none; -webkit-overflow-scrolling:touch;"></div>
+</div>
+
+<!-- ── Video modal ── -->
+<div id="video-modal">
+  <button id="vm-close" class="absolute top-6 right-6 text-white/60 hover:text-white text-3xl p-2 z-10 transition-colors w-10 h-10 flex items-center justify-center">✕</button>
+  <video id="vm-player" class="max-w-5xl w-full max-h-[80vh]" controls style="outline:none; border-radius:2px;">
+    <source src="" type="video/mp4">
+  </video>
+</div>
+
+<!-- ═══════════════════════════ NAV ═══════════════════════════ -->
+<nav id="navbar" class="fixed top-0 left-0 right-0 z-[80] px-6 md:px-12 py-5 border-b border-transparent transition-all duration-500">
+  <div class="max-w-7xl mx-auto flex items-center justify-between">
+
+    <a href="index.html" class="flex items-center gap-3 group">
+      <img src="public/Heaven villa/logo.png" alt="Mannat" class="h-10 md:h-11 object-contain" onerror="this.style.display='none'">
+      <span style="font-family:'Cormorant Garamond',serif; font-size:1.45rem; letter-spacing:.18em; color:#f0ede8;"
+            class="group-hover:text-gold transition-colors duration-300">MANNAT</span>
+    </a>
+
+    <ul class="hidden md:flex items-center gap-10">
+      <li><a href="index.html#properties" class="nav-link text-xs tracking-widest text-white/65 hover:text-gold transition-colors">PROPERTIES</a></li>
+      <li><a href="index.html#about"      class="nav-link text-xs tracking-widest text-white/65 hover:text-gold transition-colors">ABOUT</a></li>
+      <li><a href="#inquiry"              class="nav-link text-xs tracking-widest text-white/65 hover:text-gold transition-colors">CONTACT</a></li>
+    </ul>
+
+    <div class="hidden md:flex gap-4 items-center">
+      <a href="tel:+91XXXXXXXXXX" class="text-xs tracking-widest text-white/50 hover:text-gold transition-colors">+91-XXXXXXXXXX</a>
+      <a href="#inquiry" class="btn-gold border border-gold/50 text-gold text-xs tracking-[.3em] px-5 py-2.5 transition-colors">INQUIRE</a>
+    </div>
+
+    <button id="hamburger" class="md:hidden flex flex-col gap-[5px] p-2" aria-label="Menu">
+      <span class="block w-6 h-px bg-gold transition-all duration-300"></span>
+      <span class="block w-6 h-px bg-gold transition-all duration-300"></span>
+      <span class="block w-4 h-px bg-gold self-end transition-all duration-300"></span>
+    </button>
+  </div>
+</nav>
+
+<!-- Mobile menu -->
+<div id="mobile-menu" class="fixed inset-y-0 right-0 w-full max-w-xs bg-s1 z-[85] flex flex-col justify-center px-10 gap-8 border-l border-gold/10">
+  <button id="menu-close" class="absolute top-6 right-6 text-gold/70 hover:text-gold text-2xl transition-colors">✕</button>
+  <a href="index.html"            class="font-serif text-3xl italic text-white/80 hover:text-gold transition-colors duration-300">Home</a>
+  <a href="index.html#properties" class="font-serif text-3xl italic text-white/80 hover:text-gold transition-colors duration-300">Properties</a>
+  <a href="#gallery"              class="font-serif text-3xl italic text-white/80 hover:text-gold transition-colors duration-300">Gallery</a>
+  <a href="#inquiry"              class="font-serif text-3xl italic text-white/80 hover:text-gold transition-colors duration-300">Inquire</a>
+  <a href="tel:+91XXXXXXXXXX" class="mt-4 text-sm tracking-widest text-gold border border-gold/40 px-6 py-3 text-center btn-gold">CALL NOW</a>
+</div>
+
+<!-- ═══════════════════════════ HERO ═══════════════════════════ -->
+<section id="hero" class="relative overflow-hidden" style="height:100svh; min-height:620px;">
+
+  <!-- Slideshow -->
+  <div id="hero-slides" class="absolute inset-0">
+    <div class="hero-slide active"><img src="public/Heaven villa/IMG_2243.JPG" alt="Heaven Villa exterior" loading="eager"></div>
+    <div class="hero-slide"><img src="public/Heaven villa/IMG_2247.JPG"  alt="Heaven Villa" loading="lazy"></div>
+    <div class="hero-slide"><img src="public/Heaven villa/IMG_2253.JPG"  alt="Heaven Villa" loading="lazy"></div>
+    <div class="hero-slide"><img src="public/Heaven villa/IMG_2267.JPG"  alt="Heaven Villa" loading="lazy"></div>
+    <div class="hero-slide"><img src="public/Heaven villa/IMG_2271.JPG"  alt="Heaven Villa" loading="lazy"></div>
+    <div class="hero-slide"><img src="public/Heaven villa/IMG_2275.JPG"  alt="Heaven Villa" loading="lazy"></div>
+  </div>
+
+  <!-- Overlay -->
+  <div class="absolute inset-0 pointer-events-none" style="background:linear-gradient(to bottom, rgba(8,8,8,.35) 0%, rgba(8,8,8,.05) 25%, rgba(8,8,8,.55) 65%, rgba(8,8,8,1) 100%)"></div>
+  <div class="absolute inset-0 pointer-events-none" style="background:linear-gradient(to right, rgba(8,8,8,.25), transparent 50%, rgba(8,8,8,.25))"></div>
+
+  <!-- "VIEW ALL PHOTOS" top-right -->
+  <button onclick="openGallery(0)"
+    class="absolute z-20 flex items-center gap-2 bg-dark/65 backdrop-blur-sm border border-gold/25 text-white/70 text-xs tracking-[.3em] px-4 py-2.5 hover:border-gold hover:text-gold transition-all duration-300"
+    style="top:96px; right:24px;">
+    <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+    </svg>
+    VIEW ALL PHOTOS
+  </button>
+
+  <!-- Property name & price — bottom -->
+  <div class="absolute bottom-0 left-0 right-0 px-6 md:px-12 pb-6 z-10">
+    <div class="max-w-7xl mx-auto">
+
+      <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-6">
+        <!-- Left -->
+        <div>
+          <p id="p-label" class="text-gold tracking-[.45em] text-xs mb-3">LUXURY VILLA &nbsp;·&nbsp; FOR SALE</p>
+          <h1 id="p-title" class="font-serif font-light leading-none mb-4"
+              style="font-size:clamp(2.8rem, 8vw, 6rem);">
+            Heaven<br><em class="italic text-gold">Villa</em>
+          </h1>
+          <p id="p-loc" class="text-white/50 flex items-center gap-2 text-sm">
+            <svg class="w-3.5 h-3.5 text-gold/60 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/>
+            </svg>
+            Prime Location, India
+          </p>
+        </div>
+        <!-- Right: price -->
+        <div id="p-price" class="md:text-right">
+          <p class="text-white/35 text-xs tracking-[.35em] mb-1">PRICE</p>
+          <p class="font-serif text-4xl md:text-5xl text-gold font-light">₹ On Request</p>
+          <p class="text-white/30 text-xs mt-1.5 tracking-wide">Contact us for exclusive pricing</p>
+        </div>
+      </div>
+
+      <!-- Quick stats bar -->
+      <div id="p-stats" class="grid grid-cols-2 md:grid-cols-5 border border-gold/15 bg-dark/60 backdrop-blur-sm">
+        <div class="stat-cell px-5 py-4 border-r border-gold/10">
+          <p class="text-gold/55 text-xs tracking-[.3em] mb-1">BEDROOMS</p>
+          <p class="font-serif text-2xl md:text-3xl font-light">4 <span class="text-base text-white/35">BHK</span></p>
+        </div>
+        <div class="stat-cell px-5 py-4 border-r border-gold/10">
+          <p class="text-gold/55 text-xs tracking-[.3em] mb-1">BATHROOMS</p>
+          <p class="font-serif text-2xl md:text-3xl font-light">4+1</p>
+        </div>
+        <div class="stat-cell px-5 py-4 border-r border-gold/10">
+          <p class="text-gold/55 text-xs tracking-[.3em] mb-1">BUILT-UP</p>
+          <p class="font-serif text-2xl md:text-3xl font-light">3,800 <span class="text-base text-white/35">sqft</span></p>
+        </div>
+        <div class="stat-cell px-5 py-4 border-r border-gold/10">
+          <p class="text-gold/55 text-xs tracking-[.3em] mb-1">PLOT</p>
+          <p class="font-serif text-2xl md:text-3xl font-light">300 <span class="text-base text-white/35">sq yd</span></p>
+        </div>
+        <div class="stat-cell px-5 py-4">
+          <p class="text-gold/55 text-xs tracking-[.3em] mb-1">PARKING</p>
+          <p class="font-serif text-2xl md:text-3xl font-light">3 <span class="text-base text-white/35">cars</span></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Side thumbnails (desktop only) -->
+  <div id="hero-thumbs" class="hidden md:flex absolute right-6 top-1/2 -translate-y-1/2 z-20 flex-col gap-1.5">
+    <div class="hero-thumb active w-16 h-11" data-idx="0"><img src="public/Heaven villa/IMG_2243.JPG" alt="" class="w-full h-full object-cover"></div>
+    <div class="hero-thumb w-16 h-11" data-idx="1"><img src="public/Heaven villa/IMG_2247.JPG"  alt="" class="w-full h-full object-cover"></div>
+    <div class="hero-thumb w-16 h-11" data-idx="2"><img src="public/Heaven villa/IMG_2253.JPG"  alt="" class="w-full h-full object-cover"></div>
+    <div class="hero-thumb w-16 h-11" data-idx="3"><img src="public/Heaven villa/IMG_2267.JPG"  alt="" class="w-full h-full object-cover"></div>
+    <div class="hero-thumb w-16 h-11" data-idx="4"><img src="public/Heaven villa/IMG_2271.JPG"  alt="" class="w-full h-full object-cover"></div>
+    <div class="hero-thumb w-16 h-11" data-idx="5"><img src="public/Heaven villa/IMG_2275.JPG"  alt="" class="w-full h-full object-cover"></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════ STICKY INFO BAR (desktop) ═══════════════════════════ -->
+<div id="info-bar" class="sticky top-[72px] z-[70] px-6 md:px-12 py-3 border-b border-transparent hidden md:block">
+  <div class="max-w-7xl mx-auto flex items-center justify-between">
+    <div class="flex gap-8">
+      <button onclick="scrollToSection('#overview')"  class="text-white/45 hover:text-gold transition-colors text-xs tracking-widest">OVERVIEW</button>
+      <button onclick="scrollToSection('#highlights')" class="text-white/45 hover:text-gold transition-colors text-xs tracking-widest">HIGHLIGHTS</button>
+      <button onclick="scrollToSection('#gallery')"   class="text-white/45 hover:text-gold transition-colors text-xs tracking-widest">GALLERY</button>
+      <button onclick="scrollToSection('#amenities')" class="text-white/45 hover:text-gold transition-colors text-xs tracking-widest">AMENITIES</button>
+      <button onclick="scrollToSection('#videos')"    class="text-white/45 hover:text-gold transition-colors text-xs tracking-widest">VIDEOS</button>
+      <button onclick="scrollToSection('#inquiry')"   class="text-white/45 hover:text-gold transition-colors text-xs tracking-widest">INQUIRE</button>
+    </div>
+    <a href="#inquiry" class="btn-gold border border-gold/40 text-gold text-xs tracking-[.3em] px-5 py-2 transition-colors">SCHEDULE VISIT</a>
+  </div>
+</div>
+
+<!-- ═══════════════════════════ OVERVIEW ═══════════════════════════ -->
+<section id="overview" class="py-24 px-6 md:px-12 bg-dark">
+  <div class="max-w-7xl mx-auto">
+
+    <!-- Section label -->
+    <div class="mb-14 js-reveal">
+      <p class="text-gold tracking-[.45em] text-xs mb-4">PROPERTY OVERVIEW</p>
+      <h2 class="font-serif font-light text-4xl md:text-5xl lg:text-6xl leading-snug">
+        A Vision of<br><em class="italic text-gold">Luxury Living</em>
+      </h2>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-5 gap-16 items-start">
+
+      <!-- Description -->
+      <div class="lg:col-span-3 js-reveal">
+        <div class="space-y-5 text-white/55 font-light leading-[1.9] text-sm md:text-base mb-10">
+          <p>Heaven Villa is a masterpiece of contemporary luxury — a sprawling 4-bedroom residence crafted for those who seek nothing less than perfection in every detail. Every room is a statement; every corridor, an experience.</p>
+          <p>Nestled in a prime location, this residence seamlessly blends architectural grandeur with the warmth of a family home. From the grand entrance foyer to the private terrace overlooking landscaped gardens, Heaven Villa sets a new benchmark for premium living.</p>
+          <p>The property boasts expansive living spaces bathed in natural light, a state-of-the-art modular kitchen, a private swimming pool, a dedicated home theater, and full smart-home automation — all crafted with imported materials and meticulous attention to detail.</p>
+        </div>
+
+        <!-- Tags -->
+        <div class="flex flex-wrap gap-2 mb-10">
+          <span class="bg-gold/10 border border-gold/20 text-gold text-xs tracking-[.2em] px-4 py-2">VAASTU COMPLIANT</span>
+          <span class="bg-gold/10 border border-gold/20 text-gold text-xs tracking-[.2em] px-4 py-2">SMART HOME</span>
+          <span class="bg-gold/10 border border-gold/20 text-gold text-xs tracking-[.2em] px-4 py-2">READY TO MOVE</span>
+          <span class="bg-gold/10 border border-gold/20 text-gold text-xs tracking-[.2em] px-4 py-2">FULLY FURNISHED</span>
+          <span class="bg-gold/10 border border-gold/20 text-gold text-xs tracking-[.2em] px-4 py-2">PRIVATE POOL</span>
+        </div>
+
+        <!-- CTA -->
+        <div class="flex flex-wrap gap-4">
+          <a href="#inquiry" class="btn-gold border border-gold text-gold px-8 py-3.5 text-xs tracking-[.3em] transition-colors inline-flex items-center gap-2">
+            SCHEDULE A VISIT
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+          </a>
+          <button onclick="openGallery(0)" class="border border-white/10 text-white/50 hover:border-gold/40 hover:text-gold px-8 py-3.5 text-xs tracking-[.3em] transition-all inline-flex items-center gap-2">
+            VIEW GALLERY
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Specifications table -->
+      <div class="lg:col-span-2 js-reveal">
+        <p class="text-gold tracking-[.4em] text-xs mb-5">SPECIFICATIONS</p>
+        <div style="border:1px solid rgba(255,255,255,.07); border-radius:2px;">
+          <div class="spec-row"><span class="text-white/40 text-sm">Property Type</span>    <span class="text-white/85 text-sm font-medium">Luxury Villa</span></div>
+          <div class="spec-row"><span class="text-white/40 text-sm">Configuration</span>    <span class="text-white/85 text-sm font-medium">4 BHK + Study</span></div>
+          <div class="spec-row"><span class="text-white/40 text-sm">Built-Up Area</span>    <span class="text-white/85 text-sm font-medium">3,800 sq ft</span></div>
+          <div class="spec-row"><span class="text-white/40 text-sm">Plot Area</span>         <span class="text-white/85 text-sm font-medium">300 sq yards</span></div>
+          <div class="spec-row"><span class="text-white/40 text-sm">Bedrooms</span>          <span class="text-white/85 text-sm font-medium">4 + Study Room</span></div>
+          <div class="spec-row"><span class="text-white/40 text-sm">Bathrooms</span>         <span class="text-white/85 text-sm font-medium">4 Full + 1 Guest</span></div>
+          <div class="spec-row"><span class="text-white/40 text-sm">Parking</span>           <span class="text-white/85 text-sm font-medium">3-Car Covered Garage</span></div>
+          <div class="spec-row"><span class="text-white/40 text-sm">Floors</span>            <span class="text-white/85 text-sm font-medium">G + 1 (+ Terrace)</span></div>
+          <div class="spec-row"><span class="text-white/40 text-sm">Furnishing</span>        <span class="text-white/85 text-sm font-medium">Fully Furnished</span></div>
+          <div class="spec-row"><span class="text-white/40 text-sm">Age of Property</span>  <span class="text-white/85 text-sm font-medium">New Construction</span></div>
+          <div class="spec-row"><span class="text-white/40 text-sm">Facing</span>            <span class="text-white/85 text-sm font-medium">East Facing</span></div>
+          <div class="spec-row"><span class="text-white/40 text-sm">Availability</span>      <span class="text-gold text-sm font-semibold">Ready to Move</span></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════ KEY HIGHLIGHTS ═══════════════════════════ -->
+<section id="highlights" class="py-24 px-6 md:px-12 bg-s1">
+  <div class="max-w-7xl mx-auto">
+
+    <div class="mb-14 js-reveal">
+      <p class="text-gold tracking-[.45em] text-xs mb-4">KEY HIGHLIGHTS</p>
+      <h2 class="font-serif font-light text-4xl md:text-5xl">What Makes Heaven Villa<br><em class="italic text-gold">Extraordinary</em></h2>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+
+      <div class="highlight-card js-reveal">
+        <div class="w-10 h-10 border border-gold/30 flex items-center justify-center mb-5">
+          <svg class="w-5 h-5 text-gold/70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064"/></svg>
+        </div>
+        <h3 class="font-serif text-xl font-light mb-2">Private Swimming Pool</h3>
+        <p class="text-white/40 text-sm leading-relaxed">Temperature-controlled infinity-edge pool surrounded by imported granite decking and lush landscaping.</p>
+      </div>
+
+      <div class="highlight-card js-reveal">
+        <div class="w-10 h-10 border border-gold/30 flex items-center justify-center mb-5">
+          <svg class="w-5 h-5 text-gold/70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+        </div>
+        <h3 class="font-serif text-xl font-light mb-2">Smart Home Automation</h3>
+        <p class="text-white/40 text-sm leading-relaxed">Fully integrated smart system — control lighting, climate, security, and entertainment from your phone.</p>
+      </div>
+
+      <div class="highlight-card js-reveal">
+        <div class="w-10 h-10 border border-gold/30 flex items-center justify-center mb-5">
+          <svg class="w-5 h-5 text-gold/70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 4V2m10 2V2M5 8h14M5 8a2 2 0 00-2 2v10a2 2 0 002 2h14a2 2 0 002-2V10a2 2 0 00-2-2M5 8h14"/></svg>
+        </div>
+        <h3 class="font-serif text-xl font-light mb-2">Dedicated Home Theater</h3>
+        <p class="text-white/40 text-sm leading-relaxed">A private cinema room with Dolby Atmos surround sound, 4K laser projection, and plush recliner seating.</p>
+      </div>
+
+      <div class="highlight-card js-reveal">
+        <div class="w-10 h-10 border border-gold/30 flex items-center justify-center mb-5">
+          <svg class="w-5 h-5 text-gold/70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+        </div>
+        <h3 class="font-serif text-xl font-light mb-2">Italian Modular Kitchen</h3>
+        <p class="text-white/40 text-sm leading-relaxed">Chef-grade kitchen with imported Italian cabinetry, Miele appliances, and an island with a breakfast bar.</p>
+      </div>
+
+      <div class="highlight-card js-reveal">
+        <div class="w-10 h-10 border border-gold/30 flex items-center justify-center mb-5">
+          <svg class="w-5 h-5 text-gold/70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
+        </div>
+        <h3 class="font-serif text-xl font-light mb-2">Landscaped Garden</h3>
+        <p class="text-white/40 text-sm leading-relaxed">Designer outdoor spaces with curated tropical planting, stone pathways, and a pergola entertaining area.</p>
+      </div>
+
+      <div class="highlight-card js-reveal">
+        <div class="w-10 h-10 border border-gold/30 flex items-center justify-center mb-5">
+          <svg class="w-5 h-5 text-gold/70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+        </div>
+        <h3 class="font-serif text-xl font-light mb-2">Premium Security</h3>
+        <p class="text-white/40 text-sm leading-relaxed">360° CCTV surveillance, video door phone, intercom, and a separate security cabin with 24/7 guard.</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════ GALLERY ═══════════════════════════ -->
+<section id="gallery" class="py-24 px-6 md:px-12 bg-dark">
+  <div class="max-w-7xl mx-auto">
+
+    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-12 js-reveal">
+      <div>
+        <p class="text-gold tracking-[.45em] text-xs mb-4">PHOTO GALLERY</p>
+        <h2 class="font-serif font-light text-4xl md:text-5xl">Every Corner,<br><em class="italic text-gold">Perfected</em></h2>
+      </div>
+      <div class="flex items-center gap-3">
+        <span class="text-white/25 text-xs tracking-widest hidden sm:block">CLICK TO ENLARGE</span>
+        <button onclick="openGallery(0)" class="btn-gold border border-gold/40 text-gold text-xs tracking-[.3em] px-5 py-2.5 transition-colors">ALL PHOTOS</button>
+      </div>
+    </div>
+
+    <!-- CSS columns masonry grid -->
+    <div class="masonry-grid">
+
+      <div class="masonry-item js-reveal" onclick="openGallery(0)">
+        <img src="public/Heaven villa/IMG_2239.JPG" alt="Heaven Villa" loading="lazy">
+        <div class="gal-overlay"><svg class="w-7 h-7 text-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"/></svg></div>
+      </div>
+      <div class="masonry-item js-reveal" onclick="openGallery(1)">
+        <img src="public/Heaven villa/IMG_2245.JPG" alt="" loading="lazy">
+        <div class="gal-overlay"></div>
+      </div>
+      <div class="masonry-item js-reveal" onclick="openGallery(2)">
+        <img src="public/Heaven villa/IMG_2250.JPG" alt="" loading="lazy">
+        <div class="gal-overlay"></div>
+      </div>
+      <div class="masonry-item js-reveal" onclick="openGallery(3)">
+        <img src="public/Heaven villa/IMG_2262.JPG" alt="" loading="lazy">
+        <div class="gal-overlay"></div>
+      </div>
+      <div class="masonry-item js-reveal" onclick="openGallery(4)">
+        <img src="public/Heaven villa/IMG_2265.JPG" alt="" loading="lazy">
+        <div class="gal-overlay"></div>
+      </div>
+      <div class="masonry-item js-reveal" onclick="openGallery(5)">
+        <img src="public/Heaven villa/IMG_2273.JPG" alt="" loading="lazy">
+        <div class="gal-overlay"></div>
+      </div>
+      <div class="masonry-item js-reveal" onclick="openGallery(6)">
+        <img src="public/Heaven villa/IMG_2274.JPG" alt="" loading="lazy">
+        <div class="gal-overlay"></div>
+      </div>
+      <div class="masonry-item js-reveal" onclick="openGallery(7)">
+        <img src="public/Heaven villa/IMG_2275.JPG" alt="" loading="lazy">
+        <div class="gal-overlay"></div>
+      </div>
+      <div class="masonry-item js-reveal" onclick="openGallery(8)">
+        <img src="public/Heaven villa/IMG_2278.JPG" alt="" loading="lazy">
+        <div class="gal-overlay"></div>
+      </div>
+      <div class="masonry-item js-reveal" onclick="openGallery(9)">
+        <img src="public/Heaven villa/IMG_2280.JPG" alt="" loading="lazy">
+        <div class="gal-overlay"></div>
+      </div>
+      <div class="masonry-item js-reveal" onclick="openGallery(10)">
+        <img src="public/Heaven villa/IMG_2283.JPG" alt="" loading="lazy">
+        <div class="gal-overlay"></div>
+      </div>
+      <div class="masonry-item js-reveal" onclick="openGallery(11)">
+        <img src="public/Heaven villa/IMG_2291.JPG" alt="" loading="lazy">
+        <div class="gal-overlay"></div>
+      </div>
+      <div class="masonry-item js-reveal" onclick="openGallery(12)">
+        <img src="public/Heaven villa/IMG_2293.JPG" alt="" loading="lazy">
+        <div class="gal-overlay"></div>
+      </div>
+      <div class="masonry-item js-reveal" onclick="openGallery(13)">
+        <img src="public/Heaven villa/IMG_2305.JPG" alt="" loading="lazy">
+        <div class="gal-overlay"></div>
+      </div>
+      <div class="masonry-item js-reveal" onclick="openGallery(14)">
+        <img src="public/Heaven villa/IMG_2308.JPG" alt="" loading="lazy">
+        <div class="gal-overlay"></div>
+      </div>
+      <div class="masonry-item js-reveal" onclick="openGallery(15)">
+        <img src="public/Heaven villa/IMG_2312.JPG" alt="" loading="lazy">
+        <div class="gal-overlay"></div>
+      </div>
+      <!-- "more" tile -->
+      <div class="masonry-item js-reveal" onclick="openGallery(16)">
+        <div class="relative">
+          <img src="public/Heaven villa/IMG_2315.JPG" alt="" loading="lazy">
+          <div class="gal-overlay" style="opacity:1; background:rgba(8,8,8,.55);">
+            <div class="text-center pointer-events-none">
+              <p class="font-serif text-3xl text-gold">+21</p>
+              <p class="text-white/60 text-xs tracking-[.3em] mt-1">MORE PHOTOS</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /masonry -->
+  </div>
+</section>
+
+<!-- ═══════════════════════════ AMENITIES ═══════════════════════════ -->
+<section id="amenities" class="py-24 px-6 md:px-12 bg-s1">
+  <div class="max-w-7xl mx-auto">
+
+    <div class="text-center mb-14 js-reveal">
+      <p class="text-gold tracking-[.45em] text-xs mb-4">FEATURES & AMENITIES</p>
+      <h2 class="font-serif font-light text-4xl md:text-5xl">Crafted for the<br><em class="italic text-gold">Extraordinary</em></h2>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+
+      <div class="amenity-card js-reveal">
+        <div class="w-9 h-9 border border-gold/30 flex items-center justify-center flex-shrink-0">
+          <svg class="w-4 h-4 text-gold/70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945"/></svg>
+        </div>
+        <div>
+          <p class="text-sm font-medium text-white/85">Private Swimming Pool</p>
+          <p class="text-xs text-white/35 mt-0.5">Temperature controlled, infinity edge</p>
+        </div>
+      </div>
+
+      <div class="amenity-card js-reveal">
+        <div class="w-9 h-9 border border-gold/30 flex items-center justify-center flex-shrink-0">
+          <svg class="w-4 h-4 text-gold/70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 4V2m10 2V2M5 8h14M5 8a2 2 0 00-2 2v10a2 2 0 002 2h14a2 2 0 002-2V10a2 2 0 00-2-2"/></svg>
+        </div>
+        <div>
+          <p class="text-sm font-medium text-white/85">Dolby Atmos Home Theater</p>
+          <p class="text-xs text-white/35 mt-0.5">4K laser projection, 11-seat cinema</p>
+        </div>
+      </div>
+
+      <div class="amenity-card js-reveal">
+        <div class="w-9 h-9 border border-gold/30 flex items-center justify-center flex-shrink-0">
+          <svg class="w-4 h-4 text-gold/70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+        </div>
+        <div>
+          <p class="text-sm font-medium text-white/85">Full Smart Home System</p>
+          <p class="text-xs text-white/35 mt-0.5">App-controlled lighting, AC & security</p>
+        </div>
+      </div>
+
+      <div class="amenity-card js-reveal">
+        <div class="w-9 h-9 border border-gold/30 flex items-center justify-center flex-shrink-0">
+          <svg class="w-4 h-4 text-gold/70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+        </div>
+        <div>
+          <p class="text-sm font-medium text-white/85">Italian Modular Kitchen</p>
+          <p class="text-xs text-white/35 mt-0.5">Miele appliances, quartz countertops</p>
+        </div>
+      </div>
+
+      <div class="amenity-card js-reveal">
+        <div class="w-9 h-9 border border-gold/30 flex items-center justify-center flex-shrink-0">
+          <svg class="w-4 h-4 text-gold/70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
+        </div>
+        <div>
+          <p class="text-sm font-medium text-white/85">Landscaped Garden</p>
+          <p class="text-xs text-white/35 mt-0.5">Designer planting, pergola & pathways</p>
+        </div>
+      </div>
+
+      <div class="amenity-card js-reveal">
+        <div class="w-9 h-9 border border-gold/30 flex items-center justify-center flex-shrink-0">
+          <svg class="w-4 h-4 text-gold/70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+        </div>
+        <div>
+          <p class="text-sm font-medium text-white/85">24/7 Security & CCTV</p>
+          <p class="text-xs text-white/35 mt-0.5">360° surveillance + security cabin</p>
+        </div>
+      </div>
+
+      <div class="amenity-card js-reveal">
+        <div class="w-9 h-9 border border-gold/30 flex items-center justify-center flex-shrink-0">
+          <svg class="w-4 h-4 text-gold/70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+        </div>
+        <div>
+          <p class="text-sm font-medium text-white/85">Solar Power System</p>
+          <p class="text-xs text-white/35 mt-0.5">Renewable energy with battery backup</p>
+        </div>
+      </div>
+
+      <div class="amenity-card js-reveal">
+        <div class="w-9 h-9 border border-gold/30 flex items-center justify-center flex-shrink-0">
+          <svg class="w-4 h-4 text-gold/70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+        </div>
+        <div>
+          <p class="text-sm font-medium text-white/85">Private Rooftop Terrace</p>
+          <p class="text-xs text-white/35 mt-0.5">Panoramic views, outdoor lounge</p>
+        </div>
+      </div>
+
+      <div class="amenity-card js-reveal">
+        <div class="w-9 h-9 border border-gold/30 flex items-center justify-center flex-shrink-0">
+          <svg class="w-4 h-4 text-gold/70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+        </div>
+        <div>
+          <p class="text-sm font-medium text-white/85">Servant Quarters</p>
+          <p class="text-xs text-white/35 mt-0.5">Attached with separate entry & bath</p>
+        </div>
+      </div>
+
+      <div class="amenity-card js-reveal">
+        <div class="w-9 h-9 border border-gold/30 flex items-center justify-center flex-shrink-0">
+          <svg class="w-4 h-4 text-gold/70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
+        </div>
+        <div>
+          <p class="text-sm font-medium text-white/85">False Ceiling & LED Lighting</p>
+          <p class="text-xs text-white/35 mt-0.5">Layered ambient + task lighting</p>
+        </div>
+      </div>
+
+      <div class="amenity-card js-reveal">
+        <div class="w-9 h-9 border border-gold/30 flex items-center justify-center flex-shrink-0">
+          <svg class="w-4 h-4 text-gold/70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+        </div>
+        <div>
+          <p class="text-sm font-medium text-white/85">Spa Master Bathroom</p>
+          <p class="text-xs text-white/35 mt-0.5">Rain shower, jacuzzi, imported tiles</p>
+        </div>
+      </div>
+
+      <div class="amenity-card js-reveal">
+        <div class="w-9 h-9 border border-gold/30 flex items-center justify-center flex-shrink-0">
+          <svg class="w-4 h-4 text-gold/70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0"/></svg>
+        </div>
+        <div>
+          <p class="text-sm font-medium text-white/85">3-Car Covered Parking</p>
+          <p class="text-xs text-white/35 mt-0.5">With EV charging point provision</p>
+        </div>
+      </div>
+
+    </div><!-- /grid -->
+  </div>
+</section>
+
+<!-- ═══════════════════════════ VIDEO TOUR ═══════════════════════════ -->
+<section id="videos" class="py-24 px-6 md:px-12 bg-dark">
+  <div class="max-w-7xl mx-auto">
+
+    <div class="text-center mb-14 js-reveal">
+      <p class="text-gold tracking-[.45em] text-xs mb-4">VISUAL TOUR</p>
+      <h2 class="font-serif font-light text-4xl md:text-5xl">Experience<br><em class="italic text-gold">Heaven Villa</em></h2>
+    </div>
+
+    <!-- Featured video -->
+    <div class="relative group cursor-pointer js-reveal" style="aspect-ratio:16/9; overflow:hidden; max-height:580px;"
+         onclick="openVideo('public/Heaven villa/Heavan villa Reel 2.mp4')">
+      <img src="public/Heaven villa/IMG_2293.JPG" alt="Video thumbnail"
+           class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out">
+      <div class="absolute inset-0" style="background:rgba(8,8,8,.48)"></div>
+      <div class="absolute inset-0 flex items-center justify-center">
+        <div class="play-btn w-20 h-20 border-2 border-gold/60 rounded-full flex items-center justify-center
+                    bg-dark/50 backdrop-blur-sm group-hover:border-gold group-hover:bg-gold/10 transition-all duration-300">
+          <svg class="w-7 h-7 text-gold ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+        </div>
+      </div>
+      <div class="absolute bottom-6 left-6 md:bottom-10 md:left-10">
+        <p class="text-gold text-xs tracking-[.35em] mb-2">FEATURED WALKTHROUGH</p>
+        <p class="font-serif text-2xl md:text-3xl font-light">Heaven Villa — Full Tour</p>
+      </div>
+    </div>
+
+    <!-- Clip grid -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mt-3">
+
+      <div class="relative group cursor-pointer overflow-hidden js-reveal" style="height:160px"
+           onclick="openVideo('public/Heaven villa/VID-20251228-WA0006.mp4')">
+        <img src="public/Heaven villa/IMG_2305.JPG" alt="" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+        <div class="absolute inset-0 bg-dark/50 flex items-center justify-center group-hover:bg-dark/25 transition-colors duration-300">
+          <div class="w-10 h-10 border border-gold/50 rounded-full flex items-center justify-center group-hover:border-gold group-hover:bg-gold/10 transition-all duration-300">
+            <svg class="w-4 h-4 text-gold ml-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          </div>
+        </div>
+        <p class="absolute bottom-3 left-3 text-white/65 text-xs tracking-wide">Exterior & Garden</p>
+      </div>
+
+      <div class="relative group cursor-pointer overflow-hidden js-reveal" style="height:160px"
+           onclick="openVideo('public/Heaven villa/VID-20260127-WA0001.mp4')">
+        <img src="public/Heaven villa/IMG_2320.JPG" alt="" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+        <div class="absolute inset-0 bg-dark/50 flex items-center justify-center group-hover:bg-dark/25 transition-colors duration-300">
+          <div class="w-10 h-10 border border-gold/50 rounded-full flex items-center justify-center group-hover:border-gold group-hover:bg-gold/10 transition-all duration-300">
+            <svg class="w-4 h-4 text-gold ml-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          </div>
+        </div>
+        <p class="absolute bottom-3 left-3 text-white/65 text-xs tracking-wide">Living & Dining</p>
+      </div>
+
+      <div class="relative group cursor-pointer overflow-hidden js-reveal" style="height:160px"
+           onclick="openVideo('public/Heaven villa/VID-20260201-WA0000.mp4')">
+        <img src="public/Heaven villa/IMG_2334.JPG" alt="" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+        <div class="absolute inset-0 bg-dark/50 flex items-center justify-center group-hover:bg-dark/25 transition-colors duration-300">
+          <div class="w-10 h-10 border border-gold/50 rounded-full flex items-center justify-center group-hover:border-gold group-hover:bg-gold/10 transition-all duration-300">
+            <svg class="w-4 h-4 text-gold ml-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          </div>
+        </div>
+        <p class="absolute bottom-3 left-3 text-white/65 text-xs tracking-wide">Pool Area</p>
+      </div>
+
+      <div class="relative group cursor-pointer overflow-hidden js-reveal" style="height:160px"
+           onclick="openVideo('public/Heaven villa/My movie 19.mp4')">
+        <img src="public/Heaven villa/IMG_2350.JPG" alt="" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+        <div class="absolute inset-0 bg-dark/50 flex items-center justify-center group-hover:bg-dark/25 transition-colors duration-300">
+          <div class="w-10 h-10 border border-gold/50 rounded-full flex items-center justify-center group-hover:border-gold group-hover:bg-gold/10 transition-all duration-300">
+            <svg class="w-4 h-4 text-gold ml-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          </div>
+        </div>
+        <p class="absolute bottom-3 left-3 text-white/65 text-xs tracking-wide">Bedrooms</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════ LOCATION ═══════════════════════════ -->
+<section id="location" class="py-24 px-6 md:px-12 bg-s1">
+  <div class="max-w-7xl mx-auto">
+
+    <div class="mb-14 js-reveal">
+      <p class="text-gold tracking-[.45em] text-xs mb-4">LOCATION</p>
+      <h2 class="font-serif font-light text-4xl md:text-5xl">Positioned for<br><em class="italic text-gold">Convenience</em></h2>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
+
+      <!-- Location description -->
+      <div class="js-reveal">
+        <p class="text-white/50 font-light leading-relaxed text-sm md:text-base mb-8">
+          Heaven Villa is strategically located in one of the most sought-after residential corridors, offering seamless connectivity to key commercial, educational, and leisure destinations while remaining a private sanctuary away from the city's bustle.
+        </p>
+
+        <!-- Distance list -->
+        <div class="space-y-0" style="border:1px solid rgba(255,255,255,.06);">
+          <div class="spec-row"><span class="text-white/40 text-sm flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-gold/60 flex-shrink-0"></span>International Airport</span><span class="text-white/70 text-sm">25 min drive</span></div>
+          <div class="spec-row"><span class="text-white/40 text-sm flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-gold/60 flex-shrink-0"></span>City Centre / CBD</span><span class="text-white/70 text-sm">15 min drive</span></div>
+          <div class="spec-row"><span class="text-white/40 text-sm flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-gold/60 flex-shrink-0"></span>Premium Schools</span><span class="text-white/70 text-sm">5 min drive</span></div>
+          <div class="spec-row"><span class="text-white/40 text-sm flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-gold/60 flex-shrink-0"></span>Multi-speciality Hospital</span><span class="text-white/70 text-sm">10 min drive</span></div>
+          <div class="spec-row"><span class="text-white/40 text-sm flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-gold/60 flex-shrink-0"></span>Premium Mall / Retail</span><span class="text-white/70 text-sm">8 min drive</span></div>
+          <div class="spec-row"><span class="text-white/40 text-sm flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-gold/60 flex-shrink-0"></span>5-Star Hotel</span><span class="text-white/70 text-sm">12 min drive</span></div>
+        </div>
+      </div>
+
+      <!-- Map placeholder / image -->
+      <div class="js-reveal relative overflow-hidden" style="height:380px; background:#141414; border:1px solid rgba(255,255,255,.06);">
+        <img src="public/Heaven villa/IMG_2358.JPG" alt="Locality" class="w-full h-full object-cover opacity-30">
+        <div class="absolute inset-0 flex flex-col items-center justify-center text-center px-8">
+          <div class="w-12 h-12 border border-gold/40 rounded-full flex items-center justify-center mb-4">
+            <svg class="w-5 h-5 text-gold" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/></svg>
+          </div>
+          <p class="font-serif text-xl text-white/80 mb-2">Heaven Villa</p>
+          <p class="text-white/35 text-xs tracking-widest mb-6">PRIME LOCATION · INDIA</p>
+          <a href="#inquiry" class="btn-gold border border-gold/40 text-gold text-xs tracking-[.3em] px-6 py-2.5 transition-colors inline-block">GET EXACT ADDRESS</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════ INQUIRY ═══════════════════════════ -->
+<section id="inquiry" class="py-32 px-6 md:px-12 bg-dark relative overflow-hidden">
+  <div class="absolute inset-0 pointer-events-none" style="background:radial-gradient(ellipse 60% 50% at 80% 50%, rgba(201,168,76,.03), transparent)"></div>
+
+  <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-20 items-start">
+
+    <!-- Left: info -->
+    <div>
+      <p class="text-gold tracking-[.45em] text-xs mb-6 js-reveal">ENQUIRE NOW</p>
+      <h2 class="font-serif font-light text-4xl md:text-5xl mb-8 js-reveal">
+        Ready to Make<br>Heaven Villa<br><em class="italic text-gold">Yours?</em>
+      </h2>
+      <p class="text-white/45 font-light leading-relaxed mb-10 js-reveal text-sm md:text-base">
+        Fill in your details and our dedicated property specialist will contact you within 24 hours to arrange an exclusive private viewing — at a time that suits you.
+      </p>
+
+      <!-- Contact details -->
+      <div class="space-y-5 js-reveal">
+        <div class="flex items-center gap-4">
+          <div class="w-9 h-9 border border-gold/30 flex items-center justify-center flex-shrink-0">
+            <svg class="w-3.5 h-3.5 text-gold/60" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+          </div>
+          <div>
+            <p class="text-white/30 text-xs tracking-widest mb-0.5">PHONE</p>
+            <a href="tel:+91XXXXXXXXXX" class="text-white/70 hover:text-gold transition-colors text-sm">+91 — XXXXXXXXXX</a>
+          </div>
+        </div>
+        <div class="flex items-center gap-4">
+          <div class="w-9 h-9 border border-gold/30 flex items-center justify-center flex-shrink-0">
+            <svg class="w-3.5 h-3.5 text-gold/60" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+          </div>
+          <div>
+            <p class="text-white/30 text-xs tracking-widest mb-0.5">EMAIL</p>
+            <a href="mailto:info@mannatrealty.in" class="text-white/70 hover:text-gold transition-colors text-sm">info@mannatrealty.in</a>
+          </div>
+        </div>
+        <div class="flex items-center gap-4">
+          <div class="w-9 h-9 bg-[#25d366]/10 border border-[#25d366]/30 flex items-center justify-center flex-shrink-0">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="#25d366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+          </div>
+          <div>
+            <p class="text-white/30 text-xs tracking-widest mb-0.5">WHATSAPP</p>
+            <a href="https://wa.me/91XXXXXXXXXX?text=Hi%2C%20I'm%20interested%20in%20Heaven%20Villa"
+               target="_blank" rel="noopener"
+               class="text-white/70 hover:text-[#25d366] transition-colors text-sm">Chat with us</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: form -->
+    <div class="bg-s2 p-8 md:p-10 border border-white/5 js-reveal">
+      <p class="text-gold text-xs tracking-[.35em] mb-8">SCHEDULE A PRIVATE VIEWING</p>
+      <form id="inquiry-form" onsubmit="handleInquiry(event)">
+        <div class="space-y-4">
+          <input type="text"  placeholder="Full Name *"    required class="form-input block px-5 py-4 text-sm">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <input type="email" placeholder="Email Address *" required class="form-input px-5 py-4 text-sm">
+            <input type="tel"   placeholder="Phone Number *"  required class="form-input px-5 py-4 text-sm">
+          </div>
+          <select class="form-input px-5 py-4 text-sm appearance-none cursor-pointer" style="color:#888884">
+            <option value="" disabled selected>Preferred Visit Time</option>
+            <option>Morning — 9 am to 12 pm</option>
+            <option>Afternoon — 12 pm to 4 pm</option>
+            <option>Evening — 4 pm to 7 pm</option>
+          </select>
+          <textarea rows="3" placeholder="Additional Message (optional)" class="form-input block px-5 py-4 text-sm resize-none"></textarea>
+          <button type="submit"
+                  class="btn-gold w-full border border-gold text-gold py-4 text-xs tracking-[.35em] transition-colors mt-1 flex items-center justify-center gap-3">
+            REQUEST PRIVATE VIEWING
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+          </button>
+        </div>
+      </form>
+      <div id="inquiry-success" class="hidden py-10 text-center">
+        <div class="w-12 h-12 border border-gold/40 rounded-full flex items-center justify-center mx-auto mb-4">
+          <svg class="w-5 h-5 text-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 13l4 4L19 7"/></svg>
+        </div>
+        <p class="font-serif text-2xl italic text-gold mb-2">Thank You</p>
+        <p class="text-white/45 text-sm">Our specialist will contact you within 24 hours.</p>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ═══════════════════════════ FOOTER ═══════════════════════════ -->
+<footer class="bg-dark border-t border-gold/10 px-6 md:px-12 py-16">
+  <div class="max-w-7xl mx-auto">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-12 mb-14">
+
+      <div>
+        <div class="flex items-center gap-3 mb-5">
+          <img src="public/Heaven villa/logo.png" alt="Mannat" class="h-10 object-contain" onerror="this.style.display='none'">
+          <span style="font-family:'Cormorant Garamond',serif; font-size:1.45rem; letter-spacing:.18em;">MANNAT</span>
+        </div>
+        <p class="text-white/30 text-sm leading-relaxed max-w-xs">Curating exceptional living for those who demand the finest in luxury real estate.</p>
+      </div>
+
+      <div>
+        <p class="text-gold tracking-[.35em] text-xs mb-6">QUICK LINKS</p>
+        <ul class="space-y-3">
+          <li><a href="index.html"              class="text-white/40 text-sm hover:text-gold transition-colors">← All Properties</a></li>
+          <li><a href="#overview"               class="text-white/40 text-sm hover:text-gold transition-colors">Overview</a></li>
+          <li><a href="#gallery"                class="text-white/40 text-sm hover:text-gold transition-colors">Photo Gallery</a></li>
+          <li><a href="#videos"                 class="text-white/40 text-sm hover:text-gold transition-colors">Video Tour</a></li>
+          <li><a href="#inquiry"                class="text-white/40 text-sm hover:text-gold transition-colors">Schedule a Visit</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <p class="text-gold tracking-[.35em] text-xs mb-6">CONTACT</p>
+        <div class="space-y-3">
+          <a href="tel:+91XXXXXXXXXX"           class="block text-white/40 text-sm hover:text-gold transition-colors">+91 — XXXXXXXXXX</a>
+          <a href="mailto:info@mannatrealty.in" class="block text-white/40 text-sm hover:text-gold transition-colors">info@mannatrealty.in</a>
+          <a href="https://wa.me/91XXXXXXXXXX"  target="_blank" rel="noopener" class="block text-white/40 text-sm hover:text-[#25d366] transition-colors">WhatsApp us</a>
+          <p class="text-white/25 text-sm pt-2">India</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="border-t border-white/5 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
+      <p class="text-white/20 text-xs tracking-[.2em]">© 2026 MANNAT REALTY · ALL RIGHTS RESERVED</p>
+      <a href="index.html" class="text-white/20 text-xs hover:text-gold/50 transition-colors tracking-widest">← BACK TO ALL PROPERTIES</a>
+    </div>
+  </div>
+</footer>
+
+<!-- ═══════════════════════════ SCRIPTS ═══════════════════════════ -->
+<script>
+  gsap.registerPlugin(ScrollTrigger);
+
+  /* ── GSAP sets initial hidden state (NOT CSS) — so content is visible if JS fails ── */
+  gsap.set('.js-reveal', { opacity: 0, y: 48 });
+
+  /* ── Hero entrance ── */
+  gsap.timeline({ delay: .2 })
+    .to('#p-label', { opacity: 1, y: 0, duration: .7, ease: 'power3.out' })
+    .to('#p-title', { opacity: 1, y: 0, duration: 1,  ease: 'power4.out' }, '-=.4')
+    .to('#p-loc',   { opacity: 1, y: 0, duration: .6, ease: 'power3.out' }, '-=.5')
+    .to('#p-price', { opacity: 1, x: 0, duration: .6, ease: 'power3.out' }, '-=.5')
+    .to('#p-stats', { opacity: 1, y: 0, duration: .6, ease: 'power3.out' }, '-=.3')
+    .from('#hero-thumbs .hero-thumb', { opacity: 0, x: 20, stagger: .08, duration: .5, ease: 'power3.out' }, '-=.4');
+
+  /* Initial state for hero elements (GSAP handles these via .from, not .js-reveal) */
+  gsap.set(['#p-label','#p-title','#p-loc'], { opacity: 0, y: 24 });
+  gsap.set('#p-price', { opacity: 0, x: 24 });
+  gsap.set('#p-stats', { opacity: 0, y: 20 });
+
+  /* ── ScrollTrigger section reveals ── */
+  gsap.utils.toArray('.js-reveal').forEach((el, i) => {
+    gsap.to(el, {
+      opacity: 1, y: 0,
+      duration: .9,
+      ease: 'power3.out',
+      delay: (i % 4) * .07,
+      scrollTrigger: {
+        trigger: el,
+        start: 'top 88%',
+        toggleActions: 'play none none none',
+      }
+    });
+  });
+
+  /* ── Custom cursor ── */
+  const dot  = document.getElementById('c-dot');
+  const ring = document.getElementById('c-ring');
+  let mx = window.innerWidth / 2, my = window.innerHeight / 2;
+  let rx = mx, ry = my;
+
+  document.addEventListener('mousemove', e => {
+    mx = e.clientX; my = e.clientY;
+    gsap.set(dot, { x: mx, y: my });
+  });
+  (function lerp() {
+    rx += (mx - rx) * .12;
+    ry += (my - ry) * .12;
+    gsap.set(ring, { x: rx, y: ry });
+    requestAnimationFrame(lerp);
+  })();
+
+  document.querySelectorAll('a, button, .masonry-item, .hero-thumb, [onclick]').forEach(el => {
+    el.addEventListener('mouseenter', () => document.body.classList.add('cursor-grow'));
+    el.addEventListener('mouseleave', () => document.body.classList.remove('cursor-grow'));
+  });
+
+  /* ── Navbar + sticky info bar + scroll progress ── */
+  const navbar  = document.getElementById('navbar');
+  const infoBar = document.getElementById('info-bar');
+
+  window.addEventListener('scroll', () => {
+    const sy = window.scrollY;
+    navbar.classList.toggle('nav-scrolled', sy > 80);
+    if (infoBar) infoBar.classList.toggle('stuck', sy > window.innerHeight - 80);
+
+    const doc = document.documentElement;
+    const pct = doc.scrollTop / (doc.scrollHeight - doc.clientHeight) * 100;
+    document.getElementById('prog').style.width = pct + '%';
+  }, { passive: true });
+
+  /* ── Mobile menu ── */
+  const mm = document.getElementById('mobile-menu');
+  document.getElementById('hamburger').addEventListener('click',  () => mm.classList.add('open'));
+  document.getElementById('menu-close').addEventListener('click', () => mm.classList.remove('open'));
+  mm.querySelectorAll('a').forEach(a => a.addEventListener('click', () => mm.classList.remove('open')));
+
+  /* ── Hero slideshow ── */
+  const slides = document.querySelectorAll('.hero-slide');
+  const thumbs = document.querySelectorAll('.hero-thumb');
+  let current = 0, slideTimer;
+
+  function goToSlide(idx) {
+    slides[current].classList.remove('active');
+    if (thumbs[current]) thumbs[current].classList.remove('active');
+    current = (idx + slides.length) % slides.length;
+    slides[current].classList.add('active');
+    if (thumbs[current]) thumbs[current].classList.add('active');
+  }
+
+  thumbs.forEach(t => t.addEventListener('click', () => {
+    clearInterval(slideTimer);
+    goToSlide(parseInt(t.dataset.idx));
+    slideTimer = setInterval(() => goToSlide(current + 1), 5000);
+  }));
+
+  slideTimer = setInterval(() => goToSlide(current + 1), 5000);
+
+  /* ── Hero parallax ── */
+  gsap.to('#hero-slides', {
+    yPercent: 18,
+    ease: 'none',
+    scrollTrigger: { trigger: '#hero', start: 'top top', end: 'bottom top', scrub: true }
+  });
+
+  /* ── Lightbox ── */
+  const galleryImages = [
+    'public/Heaven villa/IMG_2239.JPG',
+    'public/Heaven villa/IMG_2245.JPG',
+    'public/Heaven villa/IMG_2250.JPG',
+    'public/Heaven villa/IMG_2262.JPG',
+    'public/Heaven villa/IMG_2265.JPG',
+    'public/Heaven villa/IMG_2273.JPG',
+    'public/Heaven villa/IMG_2274.JPG',
+    'public/Heaven villa/IMG_2275.JPG',
+    'public/Heaven villa/IMG_2278.JPG',
+    'public/Heaven villa/IMG_2280.JPG',
+    'public/Heaven villa/IMG_2283.JPG',
+    'public/Heaven villa/IMG_2291.JPG',
+    'public/Heaven villa/IMG_2293.JPG',
+    'public/Heaven villa/IMG_2305.JPG',
+    'public/Heaven villa/IMG_2308.JPG',
+    'public/Heaven villa/IMG_2312.JPG',
+    'public/Heaven villa/IMG_2315.JPG',
+    'public/Heaven villa/IMG_2320.JPG',
+    'public/Heaven villa/IMG_2334.JPG',
+    'public/Heaven villa/IMG_2336.JPG',
+    'public/Heaven villa/IMG_2338.JPG',
+    'public/Heaven villa/IMG_2343.JPG',
+    'public/Heaven villa/IMG_2350.JPG',
+    'public/Heaven villa/IMG_2354.JPG',
+    'public/Heaven villa/IMG_2358.JPG',
+    'public/Heaven villa/IMG_2361.JPG',
+    'public/Heaven villa/IMG_2372.JPG',
+    'public/Heaven villa/IMG_2375.JPG',
+    'public/Heaven villa/IMG_2377.JPG',
+    'public/Heaven villa/IMG_2383.JPG',
+    'public/Heaven villa/IMG_2389.JPG',
+    'public/Heaven villa/IMG_2404.JPG',
+    'public/Heaven villa/IMG_2412.JPG',
+    'public/Heaven villa/IMG_2413.JPG',
+    'public/Heaven villa/IMG_2429.JPG',
+    'public/Heaven villa/IMG_2437.JPG',
+    'public/Heaven villa/IMG_2444.JPG',
+  ];
+
+  const lb       = document.getElementById('lightbox');
+  const lbImg    = document.getElementById('lb-img');
+  const lbCtr    = document.getElementById('lb-counter');
+  const lbThumbs = document.getElementById('lb-thumbs');
+  let lbIdx = 0;
+
+  galleryImages.forEach((src, i) => {
+    const t = document.createElement('img');
+    t.src = src; t.alt = '';
+    t.style.cssText = 'flex:none;height:56px;width:80px;object-fit:cover;cursor:pointer;opacity:.45;border:1px solid transparent;transition:opacity .2s,border-color .2s;';
+    t.addEventListener('click', e => { e.stopPropagation(); showLbImg(i); });
+    lbThumbs.appendChild(t);
+  });
+
+  function showLbImg(idx) {
+    lbIdx = (idx + galleryImages.length) % galleryImages.length;
+    lbImg.classList.add('fading');
+    setTimeout(() => {
+      lbImg.src = galleryImages[lbIdx];
+      lbCtr.textContent = (lbIdx + 1) + ' / ' + galleryImages.length;
+      lbImg.classList.remove('fading');
+    }, 220);
+    Array.from(lbThumbs.children).forEach((t, i) => {
+      t.style.opacity = i === lbIdx ? '1' : '.45';
+      t.style.borderColor = i === lbIdx ? '#c9a84c' : 'transparent';
+    });
+    const thumb = lbThumbs.children[lbIdx];
+    if (thumb) thumb.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+  }
+
+  function openGallery(idx) {
+    lb.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    showLbImg(idx);
+  }
+
+  function closeLb() {
+    lb.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  document.getElementById('lb-close').addEventListener('click', closeLb);
+  document.getElementById('lb-prev').addEventListener('click', e => { e.stopPropagation(); showLbImg(lbIdx - 1); });
+  document.getElementById('lb-next').addEventListener('click', e => { e.stopPropagation(); showLbImg(lbIdx + 1); });
+  lb.addEventListener('click', e => { if (e.target === lb) closeLb(); });
+
+  document.addEventListener('keydown', e => {
+    if (!lb.classList.contains('open')) return;
+    if (e.key === 'Escape')     closeLb();
+    if (e.key === 'ArrowLeft')  showLbImg(lbIdx - 1);
+    if (e.key === 'ArrowRight') showLbImg(lbIdx + 1);
+  });
+
+  /* ── Video modal ── */
+  const vm = document.getElementById('video-modal');
+  const vmP = document.getElementById('vm-player');
+
+  function openVideo(src) {
+    vmP.querySelector('source').src = src;
+    vmP.load();
+    vm.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    vmP.play().catch(() => {});
+  }
+
+  function closeVideo() {
+    vm.classList.remove('open');
+    vmP.pause();
+    document.body.style.overflow = '';
+  }
+
+  document.getElementById('vm-close').addEventListener('click', closeVideo);
+  vm.addEventListener('click', e => { if (e.target === vm) closeVideo(); });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && vm.classList.contains('open')) closeVideo();
+  });
+
+  /* ── Smooth scroll helper (renamed to avoid native conflict) ── */
+  function scrollToSection(selector) {
+    const el = document.querySelector(selector);
+    if (!el) return;
+    gsap.to(window, { scrollTo: { y: el, offsetY: 120 }, duration: 1.2, ease: 'power3.inOut' });
+  }
+
+  /* ── Inquiry form submit ── */
+  function handleInquiry(e) {
+    e.preventDefault();
+    const btn = e.target.querySelector('button[type="submit"]');
+    const origText = btn.innerHTML;
+    btn.innerHTML = 'SENDING…';
+    btn.disabled = true;
+    setTimeout(() => {
+      document.getElementById('inquiry-form').style.display = 'none';
+      document.getElementById('inquiry-success').classList.remove('hidden');
+    }, 1200);
+  }
+</script>
+
+</body>
+</html>
